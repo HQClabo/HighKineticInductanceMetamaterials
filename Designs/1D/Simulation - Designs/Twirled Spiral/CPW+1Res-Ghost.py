@@ -6,7 +6,7 @@ Created on Tue Mar  9 15:19:21 2021
 """
 
 import gdspy
-from Resonator-design import TwirledSpiral, Cpw_twirled
+import ResonatorDesign
 import numpy as np
 
 Centre = (0,0)
