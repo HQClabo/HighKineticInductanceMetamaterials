@@ -2540,7 +2540,7 @@ def T_feedline_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     
     return ground_plane_w_feed
 
-def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6]):
+def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6],cozy=False):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2566,11 +2566,18 @@ def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height,
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
-    #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T #-f
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] #- f
-    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
+   if cozy == False:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    else:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1]
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
     
     
     width_feedline = [w_patch,w_core,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
@@ -2832,7 +2839,7 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     
     return window_both_feedlines,pads
 
-def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6]):
+def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6],cozy = False):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2858,11 +2865,19 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
-    #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T - f
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
-    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    
+    if cozy == False:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    else:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1]
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
     
     width_feedline = [w_patch,w_core,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
     width_guide = [11/5*w for w in width_feedline]
