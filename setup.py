@@ -5,9 +5,9 @@ Created on Thu Apr 29 09:47:20 2021
 @author: vweibel
 """
 
-from distutils.core import setup
+from distutils.core import setup,find_packages
 
 setup(name='Resonator design', description= 'Contains all gdspy-based functions to draw the designs.', author='HQClabo',
       author_email='HQClabo@gmail.com', url='https://github.com/HQClabo/High-kinetic-inductance-metamaterials.git',
       download_url= 'https://github.com/HQClabo/High-kinetic-inductance-metamaterials.git',
-      packages= ['HighKineticInductanceMetamaterials.Designs.Modules.ModuleResonator'])
+      packages= find_packages())
