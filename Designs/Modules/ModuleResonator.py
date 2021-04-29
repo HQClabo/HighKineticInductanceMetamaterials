@@ -703,6 +703,10 @@ def Cpw(El, Er, Hr, Sr, w = 10e-6, t = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 5
     BGround = np.asarray(BGround)
     return Lcpw, Rcpw, TGround, BGround
 
+"""
+--- meandered Spirals ------------
+"""
+
 def meandered(H,D,m,w,start=(0,0)):
     """
 
