@@ -1939,7 +1939,8 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
     r = r*1e6
     tv = tv*1e6
     tw = tw*1e6
-    tg = tg*1e6
+    # tg = tg*1e6
+    tg = tw
     center_left = center_first
     center_right = center_last
     xw = 0.5*(tw - gamma*min(tw,tv))
