@@ -957,6 +957,361 @@ def Cpw_finger(El, Er, Hr, Sr, w = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 50e-6
     BGround = np.asarray(BGround)
     return Lcpw, Rcpw, TGround, BGround
 
+"""
+--- Twirled Spiral: new
+"""
+
+def CompTwirlSpir(L, t, centre = (0,0), m = 10): #We can still change the name to something clearer/simpler !
+    
+
+    #GDSPY works in um.
+    L = L*1e6
+    t = t*1e6
+    #Ip = I + t #Here we define the spacing, Ip, defined for the path we will define below. It makes syntax easier to understand.
+    
+    #The part below find a minimal value for I such that I > 10*t
+    It = 0
+    S = 1
+    i = 1
+    while True:
+        if (L)/(2*S + 1 -2) < (m+1)*t:
+            print('The minimal value for the interspacing such that I>10*t is:',It,'um')
+            print('aaaa',(It+t)*(2*(S-i) + 1 - 2))
+            N = i-1
+            break
+        else:
+            It = (L)/(2*S + 1 -2) - t
+            print('It',It)
+            Ltemp = (It+t)*(2*S + 1 - 2)
+            print('Ltemp',Ltemp)
+        i += 1
+        S += i
+    print(i)
+    print(L)
+    LB = (It+t)*(2*(S-i)+1-2)
+    print('THIS IS THE CALCULATED L',LB)
+    #Now we have the minimal for I that we can have, such that we limit the strength of the stray capacitance.
+    I = It+t#We now add the thickness of the arms so it looks cleaner in the loops below
+    
+    #Now we define the structure
+    #As we before we work with right-handed and left-handed arms, we define each arm's length to be L/2
+    
+    Ltest = 0 #Value to check if we have the right length at the end of the loops
+    
+    #Right-handed part
+    Pr = [] #Pr stands for path right
+    xr0, yr0 = centre
+    Pr.append([xr0,yr0])
+    
+    xr1, yr1 = xr0 + I/2, yr0
+    Pr.append([xr1,yr1])
+    
+    Ltest += I/2
+    
+    
+    k = 0
+    while True:
+        k+=1
+        if k > (N-1):
+            xr_up, yr_up = Pr[-1][0], Pr[-1][1] + (k-1)*I
+            Pr.append([xr_up,yr_up])
+            Ltest += ((k-1)*I)
+            break
+        else:
+            xr_up, yr_up = Pr[-1][0], Pr[-1][1] + k*I
+            Pr.append([xr_up,yr_up])
+            Ltest += k*I
+        k += 1
+        if k > (N-1):
+            xr_left, yr_left = Pr[-1][0] - (k-1)*I, Pr[-1][1] 
+            Pr.append([xr_left,yr_left])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_left, yr_left = Pr[-1][0] - k*I, Pr[-1][1]
+            Pr.append([xr_left,yr_left])
+            Ltest += k*I
+        k+=1
+        if k > (N-1):
+            xr_down, yr_down = Pr[-1][0], Pr[-1][1] - (k-1)*I
+            Pr.append([xr_down,yr_down])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_down, yr_down = Pr[-1][0], Pr[-1][1] - k*I
+            Pr.append([xr_down,yr_down])
+            Ltest += k*I
+        k+=1
+        if k > (N-1):
+            xr_right, yr_right = Pr[-1][0] + (k-1)*I, Pr[-1][1]
+            Pr.append([xr_right, yr_right])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_right, yr_right = Pr[-1][0] + k*I, Pr[-1][1]
+            Pr.append([xr_right, yr_right])
+            Ltest += k*I
+    Pr = np.asarray(Pr)
+
+        
+    #Left-handed part
+    Pl = []
+    xl0, yl0 = centre
+    Pl.append([xl0,yl0])
+    
+    xl1, yl1 = xl0 - I/2, yl0
+    Pl.append([xl1, yl1])
+    
+    Ltest += I/2
+    
+    k = 0
+    while True:
+        k+=1
+        if k > (N-1):
+            xl_down, yl_down = Pl[-1][0], Pl[-1][1] - (k-1)*I
+            Pl.append([xl_down,yl_down])
+            Ltest += (k-1)*I
+            break
+        else:
+            xl_down, yl_down = Pl[-1][0], Pl[-1][1] - k*I
+            Pl.append([xl_down,yl_down])
+            Ltest += k*I
+        k += 1
+        if k > (N-1):
+            xl_right, yl_right = Pl[-1][0] + (k-1)*I, Pl[-1][1]
+            Pl.append([xl_right,yl_right])
+            Ltest += (k-1)*I
+            break
+        else:
+            xl_right, yl_right = Pl[-1][0] + k*I, Pl[-1][1]
+            Pl.append([xl_right,yl_right])
+            Ltest += k*I
+        k+=1
+        if k > (N-1):
+            xl_up, yl_up = Pl[-1][0], Pl[-1][1] + (k-1)*I
+            Pl.append([xl_up,yl_up])
+            Ltest += (k-1)*I
+            break
+        else:
+            xl_up, yl_up = Pl[-1][0], Pl[-1][1] + k*I
+            Pl.append([xl_up,yl_up])
+            Ltest += k*I
+        k+=1
+        if k > (N-1):
+            xl_left, yl_left = Pl[-1][0] - (k-1)*I, Pl[-1][1]
+            Pl.append([xl_left, yl_left])
+            Ltest += (k-1)*I
+            break
+        else:
+            xl_left, yl_left = Pl[-1][0] - k*I, Pl[-1][1]
+            Pl.append([xl_left, yl_left])
+            Ltest += k*I
+    Pl = np.asarray(Pl)
+    print('Ltest',Ltest)
+    print(L-Ltest)
+    
+    return Pr, Pl, #L-Ltest
+
+def CompTwirlSpirPad(L, t, Lcouple, Pad, centre = (0,0), m = 10): #We can still change the name to something clearer/simpler !
+    """
+    This function returns three list of points to generate a spiral resonator with an elongated side with a pad to increase the coupling
+    Parameters:
+        L: The total length of the resonator (um)
+        t: The width of the arms of your resonator v
+        Lcouple: The length of the couping arm (um)
+        Pad: The dimensions of the pad (um)
+        centre: The position of the centre of your resonator
+        m: The rule on your interspacing such that I > m * t
+    Output:
+        Pr: List of points for the right arm of the resonator
+        Pl: List of points for the left arm of the resonator
+        Ptop: List of points to generate the pad at the end of your left arm
+        L - Ltest: To test if you obtain the right length at the end.
+    
+    """
+    #GDSPY works in um.
+    #This function differ than the other, here we will build a spiral up to the N-1 branch so that we can build the last branch to couple
+    #to the feedline and building the two pads
+    L = L*1e6
+    Lcouple  = Lcouple*1e6
+    PT = Pad[0]*1e6, Pad[1]*1e6
+    t = t*1e6
+    
+    
+    La = L - Lcouple
+    
+    
+    #Ip = I + t #Here we define the spacing, Ip, defined for the path we will define below. It makes syntax easier to understand.
+    
+    #The part below find a minimal value for I such that I > 10*t
+    It = 0
+    S = 1
+    i = 1
+    while True:
+        if (La)/(2*S + i+1) < m*t:
+            # print('The minimal value for the interspacing such that I>10*t is:',It,'um')
+            # print('aaaa',It*(2*S + 1 -2))
+            N = i-1
+            break
+        else:
+            It = (La)/(2*S + i+1)
+            # print('It',It)
+            Ltemp = It*(2*S + i+1)
+            # print('Ltemp',Ltemp)
+        i += 1
+        S += i
+    # print(i)
+    # print(L)
+    LB = It*(2*(S-i)+1-2)
+    # print('THIS IS THE CALCULATED L',LB)
+    #Now we have the minimal for I that we can have, such that we limit the strength of the stray capacitance.
+    I = It#We now add the thickness of the arms so it looks cleaner in the loops below
+    
+    #Now we define the structure
+    #As we before we work with right-handed and left-handed arms, we define each arm's length to be L/2
+    
+    Ltest = 0 #Value to check if we have the right length at the end of the loops
+    
+    #Right-handed part
+    Pr = [] #Pr stands for path right
+    xr0, yr0 = centre
+    Pr.append([xr0,yr0])
+    
+    xr1, yr1 = xr0 + I/2, yr0
+    Pr.append([xr1,yr1])
+    
+    Ltest += I/2
+    
+    k = 0
+    while True:
+        k+=1
+        if k > (N):
+            xr_up, yr_up = Pr[-1][0], Pr[-1][1] + (k-1)*I
+            Pr.append([xr_up,yr_up])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_up, yr_up = Pr[-1][0], Pr[-1][1] + k*I
+            Pr.append([xr_up,yr_up])
+            Ltest += k*I
+        k += 1
+        if k > (N):
+            xr_left, yr_left = Pr[-1][0] - (k-1)*I, Pr[-1][1]
+            Pr.append([xr_left,yr_left])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_left, yr_left = Pr[-1][0] - k*I, Pr[-1][1]
+            Pr.append([xr_left,yr_left])
+            Ltest += k*I
+        k+=1
+        if k > (N):
+            xr_down, yr_down = Pr[-1][0], Pr[-1][1] - (k-1)*I
+            Pr.append([xr_down,yr_down])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_down, yr_down = Pr[-1][0], Pr[-1][1] - k*I
+            Pr.append([xr_down,yr_down])
+            Ltest += k*I
+        k+=1
+        if k > (N):
+            xr_right, yr_right = Pr[-1][0] + (k-1)*I, Pr[-1][1]
+            Pr.append([xr_right, yr_right])
+            Ltest += (k-1)*I
+            break
+        else:
+            xr_right, yr_right = Pr[-1][0] + k*I, Pr[-1][1]
+            Pr.append([xr_right, yr_right])
+            Ltest += k*I
+    Pr = np.asarray(Pr)
+
+        
+    #Left-handed part
+    Ptop = []
+    Pl = []
+    xl0, yl0 = centre
+    Pl.append([xl0,yl0])
+    
+    xl1, yl1 = xl0 - I/2, yl0
+    Pl.append([xl1, yl1])
+    
+    Ltest += I/2
+    
+    k = 0
+    while True:
+        k+=1
+        if k > (N):
+            # xl_down, yl_down = Pl[-1][0], Pl[-1][1] - (k-1)*I
+            # Pl.append([xl_down,yl_down])
+            # Ltest += (k-1)*I
+            xl_down, yl_down = Pl[-1][0], Pl[-1][1] - Lcouple
+            Pl.append([xl_down,yl_down])
+            Ltest += Lcouple
+            Ptop.append([xl_down-t,yl_down])#Ptop.append([xl_down-t/2,yl_down])
+            xl_square, yl_square = Ptop[-1][0] + PT[0], Ptop[-1][1] + PT[1]
+            Ptop.append([xl_square, yl_square])
+            break
+        else:
+            xl_down, yl_down = Pl[-1][0], Pl[-1][1] - k*I
+            Pl.append([xl_down,yl_down])
+            Ltest += k*I
+        k += 1
+        if k > (N):
+            # xl_right, yl_right = Pl[-1][0] + (k-1)*I, Pl[-1][1]
+            # Pl.append([xl_right,yl_right])
+            # Ltest += (k-1)*I
+            xl_right, yl_right = Pl[-1][0] + Lcouple, Pl[-1][1]
+            Pl.append([xl_right,yl_right])
+            Ltest += Lcouple
+            Ptop.append([xl_right,yl_right-t/2])
+            xl_square, yl_square = Ptop[-1][0] - PT[0], Ptop[-1][1] + PT[1]
+            Ptop.append([xl_square, yl_square])
+            break
+        else:
+            xl_right, yl_right = Pl[-1][0] + k*I, Pl[-1][1]
+            Pl.append([xl_right,yl_right])
+            Ltest += k*I
+        k+=1
+        if k > (N):
+            # xl_up, yl_up = Pl[-1][0], Pl[-1][1] + (k-1)*I
+            # Pl.append([xl_up,yl_up])
+            # Ltest += (k-1)*I
+            xl_up, yl_up = Pl[-1][0], Pl[-1][1] + Lcouple
+            Pl.append([xl_up,yl_up])
+            Ltest += Lcouple
+            Ptop.append([xl_up+t/2,yl_up])
+            xl_square, yl_square = Ptop[-1][0] - PT[0], Ptop[-1][1] - PT[1]
+            Ptop.append([xl_square, yl_square])
+            break
+        else:
+            xl_up, yl_up = Pl[-1][0], Pl[-1][1] + k*I
+            Pl.append([xl_up,yl_up])
+            Ltest += k*I
+        k+=1
+        if k > (N):
+            # xl_left, yl_left = Pl[-1][0] - (k-1)*I, Pl[-1][1]
+            # Pl.append([xl_left, yl_left])
+            # Ltest += (k-1)*I
+            xl_left, yl_left = Pl[-1][0] - Lcouple, Pl[-1][1]
+            Pl.append([xl_left, yl_left+t/2])
+            Ltest += Lcouple
+            Ptop.append([xl_left, yl_left])
+            xl_square, yl_square = Ptop[-1][0] + PT[0], Ptop[-1][1] - PT[1]
+            Ptop.append([xl_square, yl_square])
+            break
+        else:
+            xl_left, yl_left = Pl[-1][0] - k*I, Pl[-1][1]
+            Pl.append([xl_left, yl_left])
+            Ltest += k*I
+    Pl = np.asarray(Pl)
+    # print('Ltest',Ltest)
+    # print(L-Ltest)
+    
+    
+    return Pr, Pl, Ptop#, L - Ltest
+
+
 
 """
 --- meandered Spirals ------------
@@ -2186,6 +2541,253 @@ def T_feedline_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     
     return ground_plane_w_feed
 
+"""
+------------------------------------------------------------------------------
+hanged waveguide geometry (positive + negative)
+------------------------------------------------------------------------------
+"""
+def hanged_waveguide(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530e-6):
+    """
+    Parameters
+    ----------
+    L : float
+        LENGTH OF TRANSMISSION LINE WITHOUT PADS. (SI units)
+    w : float
+        WIDTH OF TRANSMISSION LINE. (SI units)
+    N : integer
+        NUMBER OF WELLS ALONG TRANSMISSION LINE.
+    dim_wells : N-dimensional list of tuples
+        DIMENSION OF WELLS in [x,y] direction
+    c : float, optional
+        SPACING TRANSMISSION LINE TO GROUND PLANE. The default is 30e-6. (SI units)
+    d : float, optional
+        SPACING PADS TO GROUND PLANE. The default is 70e-6. (SI units)
+    P : float, optional
+        HEIGHT OF PADS. The default is 360e-6. (SI units)
+    Q : float, optional
+        WIDTH OF PADS. The default is 530e-6. (SI units)
+    first_object : list of 1 tuple and 1 number
+        GIVE TOP-COORDINATES (i.e. x-coordinate of center, y-coordinate = top edge of object; in um) and spacing to feedline
+
+    Returns
+    -------
+    waveguide : TYPE
+        DESCRIPTION.
+    wells : TYPE
+        DESCRIPTION.
+
+    """
+    import gdspy
+    import ctypes
+    import numpy as np
+    
+    L = L*1e6
+    w = w*1e6
+    A = [a[1] for a in dim_wells]
+    B = [b[0] for b in dim_wells]
+    c = c*1e6
+    d = d*1e6
+    P = P*1e6
+    Q = Q*1e6
+    R = max(A) + P
+    
+    
+    if len(A)%N > 0:
+        print('Wrong amount of specified well depths.')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well depths.','hanged_waveguide',1)
+        return
+    if len(B)%N > 0:
+        print('Wrong amount of specified well widths!')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well widths!','hanged_waveguide',1)
+        return
+    
+    #calculate alpha (spacing between wells)
+    alpha = 1/(N+1)*(L - sum(B))
+    if alpha < 0:
+        print('Please choose smaller well widths or a smaller number of them, cannot be spaced properly!')
+        ctypes.windll.user32.MessageBoxW(0,'Please choose smaller well widths or a smaller number of them, cannot be spaced properly!','hanged_waveguide',1)
+        return
+    
+    
+    #draw big ground box
+    origin = first_object[0][0]- B[0]/2 - alpha - 2*Q - d, first_object[0][1] + first_object[1]*1e6 + w/2 - P/2 - d - R
+    grdbox_width = 2*d + 4*Q + L
+    grdbox_height = 2*R + 2*d + P
+    grdbox = gdspy.Rectangle(origin, [origin[0]+grdbox_width, origin[1]+grdbox_height])
+    
+    
+    
+    #draw feedline
+    p1,q1 = origin[0]+Q+d, first_object[0][1] + first_object[1]*1e6 + w/2 
+    p2,q2 = p1 + Q/2, q1
+    p3,q3 = p1 + Q, q1
+    p4,q4 = p3 + L, q1 
+    p5,q5 = p4 + Q/2, q1
+    p6,q6 = p4 + Q, q1
+    
+    feedline = gdspy.FlexPath([[p1,q1],[p2,q2]],P)
+    feedline = feedline.segment([p3,q3],w).segment([p4,q4],w).segment([p5,q5],P).segment([p6,q6],P)
+    guide = gdspy.FlexPath([[p1-d,q1],[p2,q2]],P+2*d)
+    guide = guide.segment([p3,q3],w+2*c).segment([p4,q4],w+2*c).segment([p5,q5],P+2*d).segment([p6+d,q6],P+2*d)
+    
+    #draw the wells
+    x11,y11 = origin[0] + d + 2*Q + alpha, origin[1] + R + d + P/2 - w/2 - c
+    x12,y12 = x11 + B[0], y11 - A[0]
+    
+    wells = gdspy.Cell('wells')
+    
+    well_1 = gdspy.Rectangle([x11,y11],[x12,y12])
+    wells.add(well_1)
+    
+    center_wells_x = [first_object[0][0]]
+    
+    w2 = x12
+    x1, y1 = 0.0, 0.0
+    x2, y2 = 0.0, 0.0
+    
+    for i in range(1,len(A)):
+        x1,y1 = w2 + alpha, y11
+        x2,y2 = x1 + B[i], y1 - A[i]
+        well_i = gdspy.Rectangle([x1,y1], [x2,y2])
+        center_i_x = x1 + B[i]/2
+        center_wells_x.append(center_i_x)
+        wells.add(well_i)
+        w2 = x2
+    
+    
+    guide = gdspy.boolean(guide,wells,'or')
+    waveguide = gdspy.boolean(grdbox, guide, 'not')
+    waveguide = gdspy.boolean(waveguide, feedline,'or')
+    
+    # bottom_transline_edge = q1 - w/2
+    
+    shift_x = [center_wells_x[0]]
+    
+    for i in range(1,len(A)):
+        dxh= np.abs(center_wells_x[i] - center_wells_x[0])
+        shift_x.append(dxh)
+    
+    return waveguide, shift_x
+
+def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530e-6):
+    """
+    Parameters
+    ----------
+    L : float
+        LENGTH OF TRANSMISSION LINE WITHOUT PADS. (SI units)
+    w : float
+        WIDTH OF TRANSMISSION LINE. (SI units)
+    N : integer
+        NUMBER OF WELLS ALONG TRANSMISSION LINE.
+    dim_wells : N-dimensional list of tuples
+        DIMENSION OF WELLS in [x,y] direction
+    c : float, optional
+        SPACING TRANSMISSION LINE TO GROUND PLANE. The default is 30e-6. (SI units)
+    d : float, optional
+        SPACING PADS TO GROUND PLANE. The default is 70e-6. (SI units)
+    P : float, optional
+        HEIGHT OF PADS. The default is 360e-6. (SI units)
+    Q : float, optional
+        WIDTH OF PADS. The default is 530e-6. (SI units)
+    first_object : list of 1 tuple and 1 number
+        GIVE TOP-COORDINATES (i.e. x-coordinate of center, y-coordinate = top edge of object; in um) and spacing to feedline
+
+    Returns
+    -------
+    waveguide : TYPE
+        DESCRIPTION.
+    wells : TYPE
+        DESCRIPTION.
+
+    """
+    import gdspy
+    import ctypes
+    import numpy as np
+    
+    L = L*1e6
+    w = w*1e6
+    A = [a[1] for a in dim_wells]
+    B = [b[0] for b in dim_wells]
+    c = c*1e6
+    d = d*1e6
+    P = P*1e6
+    Q = Q*1e6
+    R = max(A) + P
+    
+    
+    if len(A)%N > 0:
+        print('Wrong amount of specified well depths.')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well depths.','hanged_waveguide',1)
+        return
+    if len(B)%N > 0:
+        print('Wrong amount of specified well widths!')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well widths!','hanged_waveguide',1)
+        return
+    
+    #calculate alpha (spacing between wells)
+    alpha = 1/(N+1)*(L - sum(B))
+    if alpha < 0:
+        print('Please choose smaller well widths or a smaller number of them, cannot be spaced properly!')
+        ctypes.windll.user32.MessageBoxW(0,'Please choose smaller well widths or a smaller number of them, cannot be spaced properly!','hanged_waveguide',1)
+        return
+    
+    
+    #draw big ground box
+    origin = first_object[0][0]- B[0]/2 - alpha - 2*Q - d, first_object[0][1] + first_object[1]*1e6 + w/2 - P/2 - d - R
+    grdbox_width = 2*d + 4*Q + L
+    grdbox_height = 2*R + 2*d + P
+    grdbox = gdspy.Rectangle(origin, [origin[0]+grdbox_width, origin[1]+grdbox_height])
+    
+    
+    
+    #draw feedline
+    p1,q1 = origin[0]+Q+d, first_object[0][1] + first_object[1]*1e6 + w/2 
+    p2,q2 = p1 + Q/2, q1
+    p3,q3 = p1 + Q, q1
+    p4,q4 = p3 + L, q1 
+    p5,q5 = p4 + Q/2, q1
+    p6,q6 = p4 + Q, q1
+    
+    feedline = gdspy.FlexPath([[p1,q1],[p2,q2]],P)
+    feedline = feedline.segment([p3,q3],w).segment([p4,q4],w).segment([p5,q5],P).segment([p6,q6],P)
+    guide = gdspy.FlexPath([[p1-d,q1],[p2,q2]],P+2*d)
+    guide = guide.segment([p3,q3],w+2*c).segment([p4,q4],w+2*c).segment([p5,q5],P+2*d).segment([p6+d,q6],P+2*d)
+    
+    #draw the wells
+    x11,y11 = origin[0] + d + 2*Q + alpha, origin[1] + R + d + P/2 - w/2 - c
+    x12,y12 = x11 + B[0], y11 - A[0]
+    
+    wells = gdspy.Cell('wells')
+    
+    well_1 = gdspy.Rectangle([x11,y11],[x12,y12])
+    wells.add(well_1)
+    
+    center_wells_x = [first_object[0][0]]
+    
+    w2 = x12
+    x1, y1 = 0.0, 0.0
+    x2, y2 = 0.0, 0.0
+    
+    for i in range(1,len(A)):
+        x1,y1 = w2 + alpha, y11
+        x2,y2 = x1 + B[i], y1 - A[i]
+        well_i = gdspy.Rectangle([x1,y1], [x2,y2])
+        center_i_x = x1 + B[i]/2
+        center_wells_x.append(center_i_x)
+        wells.add(well_i)
+        w2 = x2
+    
+    
+    guide = gdspy.boolean(guide,wells,'or')
+    waveguide = gdspy.boolean(guide,feedline, 'not')
+    
+    shift_x = [center_wells_x[0]]
+    
+    for i in range(1,len(A)):
+        dxh= np.abs(center_wells_x[i] - center_wells_x[0])
+        shift_x.append(dxh)
+    
+    return waveguide, shift_x
 
 """
 ------------------------------------------------------------------------------
