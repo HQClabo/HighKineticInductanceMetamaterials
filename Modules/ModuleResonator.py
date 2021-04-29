@@ -1794,7 +1794,7 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
     
     if tv < tw:
         print('trivial')
-    if tv = tw:
+    if tv == tw:
         print('normal')
     if tv > tw:
         print('topological')
