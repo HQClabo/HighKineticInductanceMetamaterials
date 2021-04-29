@@ -53,6 +53,6 @@ New feedline geometry to have a 50 Ohm-line in the middle.
 
 _returns window_both_feedlines,pads,mask,mask_overlap_
 
-Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 $\Omega$ .
+Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 $\epsilon$ .
 ![T_feedline_extended_negative](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/T_feedline_extended_negative.png)
 (mask_overlap is 1 μm bigger than mask, the orange rectangle)
