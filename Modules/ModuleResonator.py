@@ -10,6 +10,10 @@ Bunch of functions for the topological waveguide/surface project
 import numpy as np
 import gdspy
 
+"""
+--- Twirled spiral: old
+""" 
+
 def spiral(L, W, I, D, Centre, SC = 0):
     """
     Generates a list of points to generate multiple Rectangles to form a squared spiral.
@@ -703,6 +707,257 @@ def Cpw(El, Er, Hr, Sr, w = 10e-6, t = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 5
     BGround = np.asarray(BGround)
     return Lcpw, Rcpw, TGround, BGround
 
+def Cpw_twirled(center1, center2, align_y, Hr, Lr, Sr, L, wg, I, w = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 50e-6, s = 7.1e-6):
+    Hr = Hr*1e6
+    Sr = Sr*1e6
+    Lr = Lr*1e6
+    w = w*1e6
+    Lc = Lc*1e6
+    Lline = Lline*1e6
+    T = T*1e6
+    s = s*1e6
+    I = I*1e6
+    L = L*1e6
+    wg = wg*1e6
+    
+   #Left CPW
+    Lcpw = []
+    
+    x1, y1 = center1[0] - Lline - 1.5*Lr - Sr + wg/2, align_y + wg/2 - Hr/2 + w/2
+    Lcpw.append([x1, y1])
+    
+    x2, y2 = x1 + Lline, y1
+    Lcpw.append([x2, y2])
+    
+    x3, y3 = x2, y2 - w
+    Lcpw.append([x3, y3])
+    
+    x4, y4 = x3 - Lline, y3
+    Lcpw.append([x4, y4])
+    
+    x5, y5 = x1, y1
+    Lcpw.append([x5, y5])
+    
+    #calculate start head coordinates x0+W/2,y0-W/2
+    startx = (center1[0] - Lr - Sr)*1e-6
+    starty = center1[1]*1e-6
+    
+    
+    headl = TwirledSpiral([startx,starty], L*1e-6, wg*1e-6, I*1e-6, [0,0])
+    
+    
+    #Right CPW
+    Rcpw = []
+    
+    a1, b1 = center2[0] + Lline + 1.5*Lr + Sr - wg/2, align_y + wg/2 - Hr/2 + w/2
+    Rcpw.append([a1, b1])
+    
+    a2, b2 = a1 - Lline, b1
+    Rcpw.append([a2, b2])
+    
+    a3, b3 = a2, b2 - w
+    Rcpw.append([a3, b3])
+    
+    a4, b4 = a3 + Lline, b3
+    Rcpw.append([a4, b4])
+    
+    a5, b5 = a1, b1
+    Rcpw.append([a5, b5])
+    
+    #calculate start head coordinates 
+    gox = (center2[0] + Lr + Sr )*1e-6 
+    goy = center2[1]*1e-6
+    
+    headr = TwirledSpiral([gox,goy], L*1e-6, wg*1e-6, I*1e-6, [0,0])
+
+    
+    #Top ground
+    TGround = []
+    
+    c1, d1 = x1, y1 + s
+    TGround.append([c1, d1])
+    
+    c2, d2 = c1, d1 + (Hr*10)/4 - s - w/2
+    TGround.append([c2, d2])
+    
+    c3, d3 = a1, d2
+    TGround.append([c3, d3])
+    
+    c4, d4 = c3, d1
+    TGround.append([c4, d4])
+    
+    c5, d5 = c4 - Lline + Lc, d4
+    TGround.append([c5, d5])
+    
+    c6, d6 = c5, d3 - T
+    TGround.append([c6, d6])
+    
+    c7, d7 = c1 + Lline - Lc, d6
+    TGround.append([c7, d7])
+    
+    c8, d8 = c7, d1
+    TGround.append([c8, d8])
+    
+    c9, d9 = c1, d1
+    TGround.append([c9, d9])
+    
+    
+    #Bottom ground
+    BGround = []
+    
+    e1, f1 = x4, y4 - s
+    BGround.append([e1, f1])
+    
+    e2, f2 = e1, f1 - ((Hr*10)/4 - s - w/2)
+    BGround.append([e2, f2])
+    
+    e3, f3 = c3, f2
+    BGround.append([e3, f3])
+    
+    e4, f4 = e3, f1
+    BGround.append([e4, f4])
+    
+    e5, f5 = e4 - Lline + Lc, f4
+    BGround.append([e5, f5])
+    
+    e6, f6 = e5, f3 + T
+    BGround.append([e6, f6])
+    
+    e7, f7 = e1 + Lline - Lc, f6
+    BGround.append([e7, f7])
+    
+    e8, f8 = e7, f1
+    BGround.append([e8, f8])
+    
+    e9, f9 = e1, f1
+    BGround.append([e9, f9])
+    
+    
+    Lcpw = np.asarray(Lcpw)
+    Rcpw = np.asarray(Rcpw)
+    TGround = np.asarray(TGround)
+    BGround = np.asarray(BGround)
+    return Lcpw, headl, Rcpw, headr, TGround, BGround
+
+def Cpw_finger(El, Er, Hr, Sr, w = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 50e-6, s = 7.1e-6):
+    El = El[0]*1e6 ,El[1]*1e6
+    Er = Er[0]*1e6, Er[1]*1e6
+    Hr = Hr*1e6
+    Sr = Sr*1e6
+    w = w*1e6
+    Lc = Lc*1e6
+    Lline = Lline*1e6
+    T = T*1e6
+    s = s*1e6
+    
+     #Left CPW
+    Lcpw = []
+    
+    x1, y1 = El[0] - Lline - Sr, El[1] + w/2
+    Lcpw.append([x1, y1])
+    
+    x2, y2 = x1 + Lline, y1
+    Lcpw.append([x2, y2])
+    
+    x3, y3 = x2, y2 - w
+    Lcpw.append([x3, y3])
+    
+    x4, y4 = x3 - Lline, y3
+    Lcpw.append([x4, y4])
+    
+    x5, y5 = x1, y1
+    Lcpw.append([x5, y5])
+    
+    
+    
+    #Right CPW
+    Rcpw = []
+    
+    a1, b1 = Er[0] + Lline + Sr, Er[1] + w/2
+    Rcpw.append([a1, b1])
+    
+    a2, b2 = a1 - Lline, b1
+    Rcpw.append([a2, b2])
+    
+    a3, b3 = a2, b2 - w
+    Rcpw.append([a3, b3])
+    
+    a4, b4 = a3 + Lline, b3
+    Rcpw.append([a4, b4])
+    
+    a5, b5 = a1, b1
+    Rcpw.append([a5, b5])
+      
+    
+    #Top ground
+    TGround = []
+    
+    c1, d1 = x1, y1 + s
+    TGround.append([c1, d1])
+    
+    c2, d2 = c1, d1 + (Hr*10)/4 - s - w/2
+    TGround.append([c2, d2])
+    
+    c3, d3 = a1, d2
+    TGround.append([c3, d3])
+    
+    c4, d4 = c3, d3 - ((Hr*10)/4 - s - w/2)
+    TGround.append([c4, d4])
+    
+    c5, d5 = c4 - Lline + Lc, d4
+    TGround.append([c5, d5])
+    
+    c6, d6 = c5, d5 + ((Hr*10)/4 - s - w/2) - T
+    TGround.append([c6, d6])
+    
+    c7, d7 = c1 + Lline - Lc, d6
+    TGround.append([c7, d7])
+    
+    c8, d8 = c7, d7 - ((Hr*10)/4 - s - w/2) + T
+    TGround.append([c8, d8])
+    
+    c9, d9 = c1, d1
+    TGround.append([c9, d9])
+    
+    
+    #Bottom ground
+    BGround = []
+    
+    e1, f1 = x4, y4 - s
+    BGround.append([e1, f1])
+    
+    e2, f2 = e1, f1 - ((Hr*10)/4 - s - w/2)
+    BGround.append([e2, f2])
+    
+    e3, f3 = c3, f2
+    BGround.append([e3, f3])
+    
+    e4, f4 = e3, f3 + ((Hr*10)/4 - s - w/2)
+    BGround.append([e4, f4])
+    
+    e5, f5 = e4 - Lline + Lc, f4
+    BGround.append([e5, f5])
+    
+    e6, f6 = e5, f5 - ((Hr*10)/4 - s - w/2) + T
+    BGround.append([e6, f6])
+    
+    e7, f7 = c1 + Lline - Lc, f6
+    BGround.append([e7, f7])
+    
+    e8, f8 = e7, f7 + ((Hr*10)/4 - s - w/2) - T
+    BGround.append([e8, f8])
+    
+    e9, f9 = e1, f1
+    BGround.append([e9, f9])
+    
+    
+    Lcpw = np.asarray(Lcpw)
+    Rcpw = np.asarray(Rcpw)
+    TGround = np.asarray(TGround)
+    BGround = np.asarray(BGround)
+    return Lcpw, Rcpw, TGround, BGround
+
+
 """
 --- meandered Spirals ------------
 """
@@ -957,255 +1212,6 @@ def Cpw_meandered(snake1, snakedim, end, Sr, w = 10e-6, Lc = 215e-6, Lline = 470
     BGround = np.asarray(BGround)
     return Lcpw, headl, centerl, Rcpw, headr, TGround, BGround
 
-def Cpw_twirled(center1, center2, align_y, Hr, Lr, Sr, L, wg, I, w = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 50e-6, s = 7.1e-6):
-    Hr = Hr*1e6
-    Sr = Sr*1e6
-    Lr = Lr*1e6
-    w = w*1e6
-    Lc = Lc*1e6
-    Lline = Lline*1e6
-    T = T*1e6
-    s = s*1e6
-    I = I*1e6
-    L = L*1e6
-    wg = wg*1e6
-    
-   #Left CPW
-    Lcpw = []
-    
-    x1, y1 = center1[0] - Lline - 1.5*Lr - Sr + wg/2, align_y + wg/2 - Hr/2 + w/2
-    Lcpw.append([x1, y1])
-    
-    x2, y2 = x1 + Lline, y1
-    Lcpw.append([x2, y2])
-    
-    x3, y3 = x2, y2 - w
-    Lcpw.append([x3, y3])
-    
-    x4, y4 = x3 - Lline, y3
-    Lcpw.append([x4, y4])
-    
-    x5, y5 = x1, y1
-    Lcpw.append([x5, y5])
-    
-    #calculate start head coordinates x0+W/2,y0-W/2
-    startx = (center1[0] - Lr - Sr)*1e-6
-    starty = center1[1]*1e-6
-    
-    
-    headl = TwirledSpiral([startx,starty], L*1e-6, wg*1e-6, I*1e-6, [0,0])
-    
-    
-    #Right CPW
-    Rcpw = []
-    
-    a1, b1 = center2[0] + Lline + 1.5*Lr + Sr - wg/2, align_y + wg/2 - Hr/2 + w/2
-    Rcpw.append([a1, b1])
-    
-    a2, b2 = a1 - Lline, b1
-    Rcpw.append([a2, b2])
-    
-    a3, b3 = a2, b2 - w
-    Rcpw.append([a3, b3])
-    
-    a4, b4 = a3 + Lline, b3
-    Rcpw.append([a4, b4])
-    
-    a5, b5 = a1, b1
-    Rcpw.append([a5, b5])
-    
-    #calculate start head coordinates 
-    gox = (center2[0] + Lr + Sr )*1e-6 
-    goy = center2[1]*1e-6
-    
-    headr = TwirledSpiral([gox,goy], L*1e-6, wg*1e-6, I*1e-6, [0,0])
-
-    
-    #Top ground
-    TGround = []
-    
-    c1, d1 = x1, y1 + s
-    TGround.append([c1, d1])
-    
-    c2, d2 = c1, d1 + (Hr*10)/4 - s - w/2
-    TGround.append([c2, d2])
-    
-    c3, d3 = a1, d2
-    TGround.append([c3, d3])
-    
-    c4, d4 = c3, d1
-    TGround.append([c4, d4])
-    
-    c5, d5 = c4 - Lline + Lc, d4
-    TGround.append([c5, d5])
-    
-    c6, d6 = c5, d3 - T
-    TGround.append([c6, d6])
-    
-    c7, d7 = c1 + Lline - Lc, d6
-    TGround.append([c7, d7])
-    
-    c8, d8 = c7, d1
-    TGround.append([c8, d8])
-    
-    c9, d9 = c1, d1
-    TGround.append([c9, d9])
-    
-    
-    #Bottom ground
-    BGround = []
-    
-    e1, f1 = x4, y4 - s
-    BGround.append([e1, f1])
-    
-    e2, f2 = e1, f1 - ((Hr*10)/4 - s - w/2)
-    BGround.append([e2, f2])
-    
-    e3, f3 = c3, f2
-    BGround.append([e3, f3])
-    
-    e4, f4 = e3, f1
-    BGround.append([e4, f4])
-    
-    e5, f5 = e4 - Lline + Lc, f4
-    BGround.append([e5, f5])
-    
-    e6, f6 = e5, f3 + T
-    BGround.append([e6, f6])
-    
-    e7, f7 = e1 + Lline - Lc, f6
-    BGround.append([e7, f7])
-    
-    e8, f8 = e7, f1
-    BGround.append([e8, f8])
-    
-    e9, f9 = e1, f1
-    BGround.append([e9, f9])
-    
-    
-    Lcpw = np.asarray(Lcpw)
-    Rcpw = np.asarray(Rcpw)
-    TGround = np.asarray(TGround)
-    BGround = np.asarray(BGround)
-    return Lcpw, headl, Rcpw, headr, TGround, BGround
-
-def Cpw_finger(El, Er, Hr, Sr, w = 10e-6, Lc = 215e-6, Lline = 470e-6, T = 50e-6, s = 7.1e-6):
-    El = El[0]*1e6 ,El[1]*1e6
-    Er = Er[0]*1e6, Er[1]*1e6
-    Hr = Hr*1e6
-    Sr = Sr*1e6
-    w = w*1e6
-    Lc = Lc*1e6
-    Lline = Lline*1e6
-    T = T*1e6
-    s = s*1e6
-    
-     #Left CPW
-    Lcpw = []
-    
-    x1, y1 = El[0] - Lline - Sr, El[1] + w/2
-    Lcpw.append([x1, y1])
-    
-    x2, y2 = x1 + Lline, y1
-    Lcpw.append([x2, y2])
-    
-    x3, y3 = x2, y2 - w
-    Lcpw.append([x3, y3])
-    
-    x4, y4 = x3 - Lline, y3
-    Lcpw.append([x4, y4])
-    
-    x5, y5 = x1, y1
-    Lcpw.append([x5, y5])
-    
-    
-    
-    #Right CPW
-    Rcpw = []
-    
-    a1, b1 = Er[0] + Lline + Sr, Er[1] + w/2
-    Rcpw.append([a1, b1])
-    
-    a2, b2 = a1 - Lline, b1
-    Rcpw.append([a2, b2])
-    
-    a3, b3 = a2, b2 - w
-    Rcpw.append([a3, b3])
-    
-    a4, b4 = a3 + Lline, b3
-    Rcpw.append([a4, b4])
-    
-    a5, b5 = a1, b1
-    Rcpw.append([a5, b5])
-      
-    
-    #Top ground
-    TGround = []
-    
-    c1, d1 = x1, y1 + s
-    TGround.append([c1, d1])
-    
-    c2, d2 = c1, d1 + (Hr*10)/4 - s - w/2
-    TGround.append([c2, d2])
-    
-    c3, d3 = a1, d2
-    TGround.append([c3, d3])
-    
-    c4, d4 = c3, d3 - ((Hr*10)/4 - s - w/2)
-    TGround.append([c4, d4])
-    
-    c5, d5 = c4 - Lline + Lc, d4
-    TGround.append([c5, d5])
-    
-    c6, d6 = c5, d5 + ((Hr*10)/4 - s - w/2) - T
-    TGround.append([c6, d6])
-    
-    c7, d7 = c1 + Lline - Lc, d6
-    TGround.append([c7, d7])
-    
-    c8, d8 = c7, d7 - ((Hr*10)/4 - s - w/2) + T
-    TGround.append([c8, d8])
-    
-    c9, d9 = c1, d1
-    TGround.append([c9, d9])
-    
-    
-    #Bottom ground
-    BGround = []
-    
-    e1, f1 = x4, y4 - s
-    BGround.append([e1, f1])
-    
-    e2, f2 = e1, f1 - ((Hr*10)/4 - s - w/2)
-    BGround.append([e2, f2])
-    
-    e3, f3 = c3, f2
-    BGround.append([e3, f3])
-    
-    e4, f4 = e3, f3 + ((Hr*10)/4 - s - w/2)
-    BGround.append([e4, f4])
-    
-    e5, f5 = e4 - Lline + Lc, f4
-    BGround.append([e5, f5])
-    
-    e6, f6 = e5, f5 - ((Hr*10)/4 - s - w/2) + T
-    BGround.append([e6, f6])
-    
-    e7, f7 = c1 + Lline - Lc, f6
-    BGround.append([e7, f7])
-    
-    e8, f8 = e7, f7 + ((Hr*10)/4 - s - w/2) - T
-    BGround.append([e8, f8])
-    
-    e9, f9 = e1, f1
-    BGround.append([e9, f9])
-    
-    
-    Lcpw = np.asarray(Lcpw)
-    Rcpw = np.asarray(Rcpw)
-    TGround = np.asarray(TGround)
-    BGround = np.asarray(BGround)
-    return Lcpw, Rcpw, TGround, BGround
 
 """
 ------------------------------------------------------------------------------
@@ -1213,7 +1219,7 @@ left-handed LC array
 ------------------------------------------------------------------------------
 """
 
-def OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False):
+def OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False,compact=False):
     L = L*1e6 #total length of inductor
     s = s*1e6 #interspacing of turns of inductor
     w = w*1e6 #width of inductor wire
@@ -1225,10 +1231,11 @@ def OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False):
     b = 3/5*A - 2*t
     #print('b: ',b)
     
-    #calculate number of windings
-    # N = int((L-2*(s+w))/(b+s))
-    N = round((L-2*(s+w))/(b+s))
-    print('N: ',N)
+    #calculate number of windings   
+    if compact == False:
+        N = int((L-2*(s+w))/(b+s))
+    else:
+        N = round((L-2*(s+w))/(b+s))
     
     #adapt start & end segment of inductor
     d_prime = 0.5*(L - N*(s+b)) + w
@@ -1236,7 +1243,6 @@ def OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False):
     
     #calculate vertical dimension of capacitor
     B = N*(s+w) + d_prime + t
-    # B = N*(s+w) + 7/4*d_prime + t
    # print('B: ', B)
     
     #Ushape, we take the centre at at the bottom/top of the U
@@ -1291,11 +1297,11 @@ def OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False):
             # print('not entered')
     
     if return_center == False:
-        return U,M
+        return U,M,B
     if return_center == True:
-        return U, M, centre
+        return U, M,B, centre
 
-def OPKI_up(L,s,w,A,t, centre=(0,0),return_center = False):
+def OPKI_up(L,s,w,A,t, centre=(0,0),return_center = False, compact = False):
     L = L*1e6 #total length of inductor
     s = s*1e6 #interspacing of turns of inductor
     w = w*1e6 #width of inductor wire
@@ -1308,8 +1314,10 @@ def OPKI_up(L,s,w,A,t, centre=(0,0),return_center = False):
     # print('b: ',b)
     
     #calculate number of windings
-    N = round((L-2*(s+w))/(b+s))
-    # N = int((L-2*(s+w))/(b+s))
+    if compact == False:
+        N = int((L-2*(s+w))/(b+s))
+    else:
+        N = round((L-2*(s+w))/(b+s))
     # print('N: ',N)
     
     #adapt start & end segment of inductor
@@ -1388,7 +1396,7 @@ def grounded_Res(L,s,w,A,t,tv,e=20.5e-6,f=24e-6,r=29e-6,gamma=1/4,ground_in_betw
     
     carac1 = {'layer': 0, 'datatype':3}
     
-    Ushape, Mshape = OPKI_down(L,s,w*1e-6,A,t*1e-6)
+    Ushape, Mshape, B = OPKI_down(L,s,w*1e-6,A,t*1e-6)
     U = gdspy.FlexPath(Ushape, t, **carac1)
     M = gdspy.FlexPath(Mshape,w,**carac1)
     
@@ -1456,7 +1464,7 @@ def ghosts(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
             Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
-            Ushape_r, Mshape_r= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
+            Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
             U_l = gdspy.FlexPath(Ushape_l, t,**carac)
             M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             U_r = gdspy.FlexPath(Ushape_r, t,**carac)
@@ -1514,7 +1522,7 @@ def ghosts(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29
         if i%2 == 0: #even
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
-            Ushape_l,Mshape_l = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
+            Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
             Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
             U_l = gdspy.FlexPath(Ushape_l, t, **carac)
             M_l = gdspy.FlexPath(Mshape_l,w,**carac)
@@ -1612,7 +1620,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
             Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
-            Ushape_r, Mshape_r= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
+            Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
             U_l = gdspy.FlexPath(Ushape_l, t)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             U_r = gdspy.FlexPath(Ushape_r, t)
@@ -1670,7 +1678,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
         if i%2 == 0: #even
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
-            Ushape_l,Mshape_l = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
+            Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
             Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
             U_l = gdspy.FlexPath(Ushape_l, t, **carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
@@ -1723,8 +1731,8 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
             # print('run ',i,'- center_left: ',center_left,' center_right: ',center_right)
     
     return ghostcell,ground
-  
-def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'datatype' : 3},gamma=1/4,ground_in_between=True):
+    
+def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'datatype' : 3},gamma=1/4,ground_in_between=True,compactRes=False):
     A = A*1e6
     t = t*1e6
     w = w*1e6
@@ -1735,26 +1743,41 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
     tw = tw*1e6
     xv = 0.5*(tv - gamma*min(tv,tw))
     xw = 0.5*(tw - gamma*min(tv,tw))
-    print(xv,xw)
-    
-    carac = {'layer': 0, 'datatype':3} #for resonator
+    # print(xv,xw)
     
 
-    #draw first resonator
-    Ushape_d, Mshape_d, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
+    if compactRes == True:
+        #get coordinates for first resonator
+        Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True), compact=True)
+        
+        #corners of 1st ground patch: down
+        box_x1, box_y1 = Mshape_d[-1][0] - e/2 - w/2, Mshape_d[-1][1]
+        box_x2, box_y2 = Mshape_d[-1][0] + w/2 + e/2, Mshape_d[-1][1]-f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of first resonator (used to draw the second one)
+        centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
+        #get coordinates for second resonator
+        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
+    else:
+        #get coordinates for first resonator
+        Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
+        
+        #corners of 1st ground patch: down
+        box_x1, box_y1 = Mshape_d[-1][0] - e/2 - w/2, Mshape_d[-1][1]
+        box_x2, box_y2 = Mshape_d[-1][0] + w/2 + e/2, Mshape_d[-1][1]-f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of first resonator (used to draw the second one)
+        centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
+        #get coordinates for second resonator
+        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
+   
+    #draw the two resonator
     U_down = gdspy.FlexPath(Ushape_d, t, **carac)
-    M_down = gdspy.FlexPath(Mshape_d,w,**carac)   
-    
-    #corners of 1st ground patch: down
-    box_x1, box_y1 = Mshape_d[-1][0] - e/2 - w/2, Mshape_d[-1][1]
-    box_x2, box_y2 = Mshape_d[-1][0] + w/2 + e/2, Mshape_d[-1][1]-f
-    ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
-    
-    #draw second resonator    
-    centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
-    Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
+    M_down = gdspy.FlexPath(Mshape_d,w,**carac)  
     U_up = gdspy.FlexPath(Ushape_u, t, **carac)
-    M_up = gdspy.FlexPath(Mshape_u, w, **carac)
+    M_up = gdspy.FlexPath(Mshape_u, w, **carac)    
     
     #corners of 2nd ground patch: up
     box_x3, box_y3 = Mshape_u[-1][0] - e/2 - w/2, Mshape_u[-1][1]
@@ -1769,22 +1792,11 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
     strip_x4, strip_y4 = strip_x3 + gamma*min(tv,tw), Ushape_u[-2][1] - t/2 - r
     
     
-    if tv <= tw:
-        # #corners of 1st ground strip in between resonators
-        # strip_x1, strip_y1 = Ushape_d[-1][0] + t/2 + (1-gamma)/2 * tv, box_y2
-        # strip_x2, strip_y2 = strip_x1 + gamma*tv, Ushape_d[-2][1] + t/2 + r
-        # #corners of 2nd ground strip in between resonators
-        # strip_x3, strip_y3 = Ushape_u[-1][0] + t/2 + (tw - gamma*tv)/2, box_y4
-        # strip_x4, strip_y4 = strip_x3 + gamma*tv, Ushape_u[-2][1] - t/2 - r
+    if tv < tw:
         print('trivial')
-    
+    if tv = tw:
+        print('normal')
     if tv > tw:
-        # #corners of 1st ground strip in between resonators
-        # strip_x1, strip_y1 = Ushape_d[-1][0] + t/2 + (tv-gamma*tw)/2, box_y2
-        # strip_x2, strip_y2 = strip_x1 + gamma*tw, Ushape_d[-2][1] + t/2 + r
-        # #corners of 2nd ground strip in between resonators
-        # strip_x3, strip_y3 = Ushape_u[-1][0] + t/2 + (1 - gamma)/2 * tw, box_y4
-        # strip_x4, strip_y4 = strip_x3 + gamma*tw, Ushape_u[-2][1] - t/2 - r 
         print('topological')
     
     unitcell = gdspy.Cell('unit cell')
@@ -1807,7 +1819,7 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
     stopUy = Ushape_u[-1][1]
     strip_height = np.abs(strip_y2 - strip_y1)
 
-    return unitcell, ground, startM, startU, stopUy, strip_height, centre_d,centre_up
+    return unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up
 
 
 def waveguide(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,f=24e-6, A = 50e-6):
@@ -1900,7 +1912,7 @@ def waveguide_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
     x1, y1 = startM[0] - A/2 - Sg - D - extent_ghosts, startM[1] - f - T
     x2, y2 = x1 + 2*(D + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
+    x3, y3 = startM[0] - A/2 - Sg - extent_(ghosts), startM[1] - f
     x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
     
     
@@ -1978,8 +1990,7 @@ def waveguide_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     
     return ground_plane_w_feed
 
-
-def waveguide_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6):
+def waveguide_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6,w_end = 2e-6,cozy = False):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -1989,7 +2000,7 @@ def waveguide_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, t
     R = R*1e6 #width of ground planes
     f = f*1e6
     A = A*1e6
-    w_end = 4 #end width feedline
+    w_end = w_end*1e6 #end width feedline
     
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
@@ -1999,11 +2010,19 @@ def waveguide_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, t
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
-    #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
-    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    
+    if cozy == False:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    else:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
+        x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1]
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
     
     #draw outer box + window
     big_plane = gdspy.Rectangle([x1,y1], [x2,y2])
@@ -2168,21 +2187,20 @@ def T_feedline_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     return ground_plane_w_feed
 
 
-
 """
 ------------------------------------------------------------------------------
 left-handed LC array: Negative
 ------------------------------------------------------------------------------
 """
 
-def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6):
+def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,f=24e-6, A = 50e-6):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
     Sr = Sr[0]*1e6,Sr[1]*1e6 #spacing feedline to resonator [x,y]-direction
     Sg = Sg*1e6 #lateral spacing to ground planes
     T = T*1e6 #thickness of ground planes
-    R = R*1e6 #width of ground planes
+    D = D*1e6 #width of ground planes
     f = f*1e6
     A = A*1e6
     w_start = 10 #start width feedline
@@ -2197,8 +2215,8 @@ def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
+    x1, y1 = startM[0] - A/2 - Sg - D - extent_ghosts, startM[1] - f - T
+    x2, y2 = x1 + 2*(D + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
     x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
     x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
     
@@ -2208,7 +2226,7 @@ def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     #subtract window from outer box
     # ground_plane = gdspy.boolean(big_plane,window,'not')
     #draw path guiding the feedline
-    points = [[x1, y1 + 2/3*(2*T + strip_height)],[x1 + R/4, y1 + 2/3*(2*T + strip_height)],[x1 + R/2, y1 + 3/5*T],[startU[0] - A + t + Sr[0],y1 + 1/5*T],[startU[0] - A + t + Sr[0],startU[1]-Sr[1]]]
+    points = [[x1, y1 + 2/3*(2*T + strip_height)],[x1 + D/4, y1 + 2/3*(2*T + strip_height)],[x1 + D/2, y1 + 3/5*T],[startU[0] - A + t + Sr[0],y1 + 1/5*T],[startU[0] - A + t + Sr[0],startU[1]-Sr[1]]]
     if Sr[0] > 0:
         points[-2][0] = startU[0] - A + t + Sr[0] + w_end
         points[-1][0] = startU[0] - A + t + Sr[0] + w_end
@@ -2221,7 +2239,7 @@ def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     feedline = gdspy.FlexPath([points[0],points[1]],width_feedline[0],corners='circular bend',bend_radius=bend_radii[0])
     feedline = feedline.segment(points[2],width_feedline[1]).segment(points[3],width_feedline[2]).segment(points[4],width_feedline[3]) #
     
-    points2 = [[x2, y2 - 2/3*(2*T + strip_height)],[x2 - R/4, y2 - 2/3*(2*T + strip_height)],[x2 - R/2, y2 - 3/5*T],[stopU[0]+ Sr[0],y2 - 1/5*T],[stopU[0]+ Sr[0],stopU[1]+Sr[1]]]
+    points2 = [[x2, y2 - 2/3*(2*T + strip_height)],[x2 - D/4, y2 - 2/3*(2*T + strip_height)],[x2 - D/2, y2 - 3/5*T],[stopU[0]+ Sr[0],y2 - 1/5*T],[stopU[0]+ Sr[0],stopU[1]+Sr[1]]]
     if Sr[0] > 0:
         points2[-2][0] = stopU[0]+ Sr[0] + w_end
         points2[-1][0] = stopU[0]+ Sr[0] + w_end
@@ -2283,11 +2301,11 @@ def ghosts_negative(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
             Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
-            Ushape_r, Mshape_r= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
-            U_l = gdspy.FlexPath(Ushape_l, t,**carac)
+            Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
+            U_l = gdspy.FlexPath(Ushape_l, t)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             # U_r = gdspy.Rectangle(center_left,[center_left[0]+50, center_left[1]+50])
-            U_r = gdspy.FlexPath(Ushape_r, t,**carac)
+            U_r = gdspy.FlexPath(Ushape_r, t)
             # M_r = gdspy.FlexPath(Mshape_r,w,**carac)
             ghostcell.add([U_r,U_l])
             #ground patches
@@ -2341,12 +2359,12 @@ def ghosts_negative(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24
         if i%2 == 0: #even
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
-            Ushape_l,Mshape_l = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
+            Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
             Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
-            U_l = gdspy.FlexPath(Ushape_l, t,**carac)
+            U_l = gdspy.FlexPath(Ushape_l, t)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             # U_r = gdspy.Rectangle(center_left,[center_left[0]+50, center_left[1]+50])
-            U_r = gdspy.FlexPath(Ushape_r, t,**carac)
+            U_r = gdspy.FlexPath(Ushape_r, t)
             # M_r = gdspy.FlexPath(Mshape_r,w,**carac)
             ghostcell.add([U_r,U_l])
             #ground patches
@@ -2440,9 +2458,9 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     
     #coordinates/ dimensions for FlexPath: right feedline + guide (etched away)
     points = [[x1-E,y1 + 1/2*(2*T + strip_height)],[x1-3*E/4, y1 + 1/2*(2*T + strip_height)],[x1-E/4, y1 + 1/2*(2*T + strip_height)],[x1-R/3, y1 + 1/2*(2*T + strip_height)],[x1, y1 + 1/2*(2*T + strip_height)],[x1 + R/2, y1 + 3/5*T], [startU[0] - A + t + Sr[0],y1 + 1/5*T],[startU[0] - A + t + Sr[0],startU[1]-Sr[1]]]
-    # if Sr[0] > 0:
-        # points[-2][0] = startU[0] - A + t + Sr[0] + w_end
-        # points[-1][0] = startU[0] - A + t + Sr[0] + w_end
+    if Sr[0] > 0:
+        points[-2][0] = startU[0] - A + t + Sr[0] + w_end
+        points[-1][0] = startU[0] - A + t + Sr[0] + w_end
     
     #enclose contact pad with etched line (right edge)
     patch_start = [points[0][0]-(width_guide[0]-width_feedline[0])/2,points[0][1]]
@@ -2465,9 +2483,9 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     
     #coordinates for left feedline + guide (FlexPath)
     points2 = [[x2+E,y2 - 1/2*(2*T + strip_height)],[x2+3*E/4, y2 - 1/2*(2*T + strip_height)],[x2+E/4, y2 - 1/2*(2*T + strip_height)],[x2+R/3, y2 - 1/2*(2*T + strip_height)],[x2, y2 - 1/2*(2*T + strip_height)],[x2 - R/2, y2 - 3/5*T],[stopU[0]+ Sr[0],y2 - 1/5*T],[stopU[0]+ Sr[0],stopU[1]+Sr[1]]]
-    # if Sr[0] > 0:
-        # points2[-2][0] = stopU[0]+ Sr[0] + w_end
-        # points2[-1][0] = stopU[0]+ Sr[0] + w_end
+    if Sr[0] > 0:
+        points2[-2][0] = stopU[0]+ Sr[0] + w_end
+        points2[-1][0] = stopU[0]+ Sr[0] + w_end
     #enclose contact pad with etched line (right edge)
     patch_start2 = [points2[0][0]+(width_guide[0]-width_feedline[0])/2,points2[0][1]]
     patch_end2 = [points2[3][0]-1,points2[3][1]]
@@ -2494,7 +2512,7 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     
     return window_both_feedlines,pads
 
-def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6):
+def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6]):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2506,10 +2524,10 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     chip_length = 6200
     f = f*1e6
     A = A*1e6
-    w_patch = 360.0
-    w_middle = 90.0
-    w_start = 10.0 #start width feedline
-    w_end = 2.0 #end width feedline
+    w_patch = w[0]*1e6
+    w_core = w[1]*1e6
+    w_start = w[2]*1e6 #start width feedline
+    w_end = w[3]*1e6 #end width feedline
     
     
     #calculate length ghosts demand
@@ -2521,12 +2539,12 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
-    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
+    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T #-f
+    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
+    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] #- f
+    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
     
-    width_feedline = [w_patch,w_middle,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
+    width_feedline = [w_patch,w_core,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
     width_guide = [11/5*w for w in width_feedline]
     width_guide[0] = 73/45*width_feedline[0]
     width_guide[1] = 31/30*width_feedline[1]
@@ -2555,7 +2573,7 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     big_patch = gdspy.FlexPath([patch_start,points[1]], width_guide[0])#,corners=#'circular bend',bend_radius = bend_radii[1])
     big_patch = big_patch.segment(patch_end,width_guide[1])
     guide = gdspy.FlexPath([points[2],points[3]],width_guide[1],corners='circular bend',bend_radius=bend_radii[2])
-    guide = guide.segment(points[4], width_guide[2]).segment(points[5],width_feedline[3]).segment(points[6],width_guide[4]).segment(points[7],width_guide[5])
+    guide = guide.segment(points[4], width_guide[2]).segment(points[5],width_guide[3]).segment(points[6],width_guide[4]).segment(points[7],width_guide[5])
     
     #draw the feedline (not etched away)
     patch = gdspy.FlexPath([points[0],points[1]], width_feedline[0])#,corners='circular bend',bend_radius = bend_radii[1])
@@ -2596,9 +2614,12 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     window_both_feedlines = gdspy.boolean(window_left_feedline,feedline2,'not')
     pads = gdspy.boolean(pad,pad2,'or')
     
-    return window_both_feedlines,pads
+    mask = gdspy.Rectangle([x1+R-150,y1-150], [x2-R+150,y2+150])
+    mask_overlap = gdspy.Rectangle([x1+R - 151, y1-151], [x2-R+151,y2+151])
+    
+    return window_both_feedlines,pads,mask,mask_overlap
 
-def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6):
+def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6, w=[360e-6,90e-6,10e-6]):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2612,23 +2633,19 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     f = f*1e6
     A = A*1e6
     B = B*1e6
-    w_patch = 360.0
-    w_middle = 90.0
-    w_start = 10.0 #start width feedline
-    
+    w_patch = w[0]*1e6
+    w_core = w[1]*1e6
+    w_start = w[2]*1e6#start width feedline
+    d_high_prec = 150 #distance from ground s.t. everything beyond is in the low-precision layer
+    d_overlap = 1 #overlap between the two precision layers
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
     x3, y3 = startM[0] - A/2 - Sr[0] - 2*w_start, startM[1] - f
     x4, y4 = x3 + 2 * Sr[0] + 4*w_start + Q*unitcell_size[0]-tw, y3 + strip_height
     x1, y1 = x3 - R, startM[1] - f - T
-    x2, y2 = x4 + R, y1 + 2*T + strip_height
-    # x1, y1 = startM[0] - A/2 - Sg - D , startM[1] - f - T
-    # x2, y2 = x1 + 2*(D + Sg) + Q*unitcell_size[0]-tw, y1 + 2*T + strip_height
-    # x3, y3 = startM[0] - A/2 - Sg, startM[1] - f
-    # x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw, y3 + strip_height
+    x2, y2 = x4 + R, y1 + 2*T + strip_height    
     
-    
-    width_feedline = [w_patch,w_middle,w_start]
+    width_feedline = [w_patch,w_core,w_start]
     width_guide = [73/45*w for w in width_feedline]
     width_guide[1] = 47/45*width_feedline[1]
     width_guide[2] = 11/5*width_feedline[2]
@@ -2699,8 +2716,12 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     window_left_feedline = gdspy.boolean(window_both_guides,feedline ,'not')
     window_both_feedlines = gdspy.boolean(window_left_feedline,feedline2,'not')
     pads = gdspy.boolean(pad,pad2,'or')
+    # window_both_feedlines = gdspy.boolean(window_both_feedlines,pads,'or')
     
-    return window_both_feedlines,pads
+    mask = gdspy.Rectangle([x1+R-d_high_prec,y1+(R-d_high_prec)*2], [x2-R+d_high_prec,y2+(-R+d_high_prec)*2])
+    mask_overlap = gdspy.Rectangle([x1+R - d_high_prec - d_overlap, y1+(R-d_high_prec)*2-d_overlap], [x2-R+d_high_prec + d_overlap,y2+(-R+d_high_prec)*2 + d_overlap])
+    
+    return window_both_feedlines,pads, mask, mask_overlap
 
 """
 ~~~~~~~~~~~~ Testing functions ~~~~~~~~
@@ -2727,19 +2748,23 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
 #     unitcell_size = [2*A*1e6 + tv*1e6 + tw*1e6,0]
     
 #     test = gdspy.Cell('negative')
+#     test_new = gdspy.Cell('negative new')
     
-#     unitcell, ground, startM,startU, stopUy, strip_height,center1st, center2nd = unit_cell(L, s, w, A, t, tv,tw,e,f,r,gamma = k, ground_in_between = ground_yn)
+#     unitcell, ground, startM,startU, stopUy, strip_height, B, center1st, center2nd = unit_cell(L, s, w, A, t, tv,tw,e,f,r,gamma = k, ground_in_between = ground_yn)
     
 #     stopU = [startU[0]-A*1e6 + Q*unitcell_size[0]-tw*1e6, stopUy]
 #     centerQth = [center1st[0]-A*1e6 + Q*unitcell_size[0] - tw*1e6, center2nd[1]]
     
-#     blib = only_waveguide(startM, startU, strip_height)
-#     # blub, blab = waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr = Sf2r, f=24e-6, A = 50e-6)
+#     # blib = only_waveguide(startM, startU, strip_height)
+#     blub, blab = waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr = Sf2r, f=24e-6, A = 50e-6)
+#     blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r)
 
-#     # test.add(blub)
-#     # test.add(blab)
-#     test.add(blib)
+#     test.add(blub)
+#     test.add(blab)
+#     test_new.add(blob)
+#     test_new.add(bleb)
 #     lib = gdspy.GdsLibrary()
 #     lib.add(test)
+#     lib.add(test_new)
 #     gdspy.LayoutViewer()
-#     lib.write_gds("Only waveguide.gds")
+#     # lib.write_gds("Only waveguide.gds")
