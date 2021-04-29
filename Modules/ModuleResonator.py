@@ -1939,8 +1939,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
     r = r*1e6
     tv = tv*1e6
     tw = tw*1e6
-    # tg = tg*1e6
-    tg = tw
+    tg = tg*1e6
     center_left = center_first
     center_right = center_last
     xw = 0.5*(tw - gamma*min(tw,tv))
@@ -2190,12 +2189,12 @@ def waveguide(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_gh
     w_start = 10 #start width feedline
     w_end = 2 #end width feedline
     
-    #calculate length ghosts demand
+     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
@@ -2259,11 +2258,11 @@ def waveguide_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
-    
+        
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
     x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
     x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
@@ -2357,12 +2356,12 @@ def waveguide_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, t
     A = A*1e6
     w_end = w_end*1e6 #end width feedline
     
-    #calculate length ghosts demand
+     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     
@@ -2562,9 +2561,9 @@ def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height,
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     if cozy == False:
@@ -2693,9 +2692,9 @@ def waveguide_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw,
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
@@ -2761,9 +2760,9 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
@@ -2861,9 +2860,9 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*(tw + tv)
-        print('extent ghosts is: ',extent_ghosts, ' (N_ghost odd)')
+        print('extent ghosts is: ',extent_ghosts, ' (rN_ghost odd)')
     else:
-        extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
+        extent_ghosts = tw + N_ghost*A + N_ghost/2*tw + N_ghost/2*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     
@@ -3335,8 +3334,12 @@ if __name__ == '__main__':
     
     test = gdspy.Cell('negative')
     test_new = gdspy.Cell('negative new')
+
     
     unitcell, ground, startM,startU, stopUy, strip_height, B, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv,tw,ep,fp,rp,gamma = k, ground_in_between = ground_yn)
+    
+    ResArray = gdspy.CellArray(unitcell, Q, 1, unitcell_size)
+    test.add(ResArray)
     
     stopU = [startU[0]-Ac*1e6 + Q*unitcell_size[0]-tw*1e6, stopUy]
     centerQth = [center1st[0]-Ac*1e6 + Q*unitcell_size[0] - tw*1e6, center2nd[1]]
@@ -3345,9 +3348,11 @@ if __name__ == '__main__':
     blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
     # blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r)
 
+    blob, blab = ghosts(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
+
     test.add(blub)
-    # test.add(blab)
-    # test_new.add(blob)
+    test.add(blab)
+    test_new.add(blob)
     # test_new.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
