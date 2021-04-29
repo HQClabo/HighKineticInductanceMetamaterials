@@ -2059,7 +2059,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
             strip_y2_r = strip_y1_r - strip_height
             
             if i == N:
-                strip_x1_N = center_left[0] - A/2 - xv
+                strip_x1_N = center_left[0] - A/2 - xw
                 strip_y1_N = box_y2
                 strip_x2_N = strip_x1_N - gamma*min(tw,tv)
                 strip_y2_N = strip_y1_N + strip_height
@@ -2566,7 +2566,7 @@ def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height,
         extent_ghosts = tw + tv + N_ghost*A + (N_ghost-1)/2*tw + ((N_ghost-1)/2 - 1)*tv
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
-    if cozy == False:
+    rif cozy == False:
         #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
         x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - f - T
         x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
