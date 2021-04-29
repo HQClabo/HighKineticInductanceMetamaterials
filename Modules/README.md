@@ -19,7 +19,7 @@ The module is divided according to the different resonator shapes and their corr
 ___
 
 # 4. Left-handed LC-Resonator metamaterial
-## Design
+## 4.1 Design
 ### OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False,compact=False)
 
 _returns U, M, B (if return_center = False) or U,M,B, centre (if return_center=True) (type: Array of float64, list, scalar,  list)_
@@ -31,6 +31,7 @@ U = gdspy.FlexPath(U_shape,t*1e6)
 M = gdspy.FlexPath(M_shape,w*1e6)
 ```
 ![OPKI_down; compact = False](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/OPKI_down_compact_false.png)
+
 If option compact = True, then inductor is more compact:
 ![OPKI_down; compact = True](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/OPKI_down_compact_true.png)
 
@@ -52,7 +53,7 @@ _returns oneRes (type: Cell)_
 draw one resonator with a ground strip on its right (if ground_in_between = True) and a ground pad.
 ![grounded_Res](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/grounded_Res.png)
 
-## Etch mask
+## 4.2 Etch mask
 ### waveguide_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=2e-6, Sr = [1e-6,2e-6],Sg = 60e-6, T = 100e-6, R = 200e-6, f = 24e-6, A = 50e-6)
 
 _returns window_both_feedlines (type: PolygonSet)_
