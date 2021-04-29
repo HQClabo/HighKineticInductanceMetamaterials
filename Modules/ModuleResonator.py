@@ -2859,10 +2859,10 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
         print('extent ghosts is: ',extent_ghosts, ' (N_ghost even)')
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
-    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T #-f
-    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height - 2*f
-    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] #- f
-    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
+    x1, y1 = startM[0] - A/2 - Sg - R - extent_ghosts, startM[1] - T - f
+    x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw + 2*extent_ghosts, y1 + 2*T + strip_height
+    x3, y3 = startM[0] - A/2 - Sg - extent_ghosts, startM[1] - f
+    x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height
     
     width_feedline = [w_patch,w_core,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
     width_guide = [11/5*w for w in width_feedline]
