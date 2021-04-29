@@ -16,6 +16,8 @@ The module is divided according to the different resonator shapes and their corr
 4. Left-handed LC-Resonator metamaterial (design + etch mask)
 5. Hanged waveguide geometry (design + etch mask)
 
+___
+
 # 4. Left-handed LC-Resonator metamaterial
 ## Etch mask
 ### waveguide_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=2e-6, Sr = [1e-6,2e-6],Sg = 60e-6, T = 100e-6, R = 200e-6, f = 24e-6, A = 50e-6)
@@ -45,10 +47,12 @@ _returns window_both_feedlines,pads,mask,mask_overlap (type: PolygonSet, Polygon
 
 New feedline geometry to have a 50 Ohm-line in the middle.
 ![waveguide_extended_negative_new](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/waveguide_extended_negative_new.png)
+(mask_overlap is 1 μm bigger than mask, the orange rectangle)
 
 ### T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6, w=[360e-6,90e-6,10e-6])
 
 _returns window_both_feedlines,pads,mask,mask_overlap_
 
-Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 $\Omega$.
+Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 $\Omega$ .
 ![T_feedline_extended_negative](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/T_feedline_extended_negative.png)
+(mask_overlap is 1 μm bigger than mask, the orange rectangle)
