@@ -45,7 +45,7 @@ Draws the waveguide with contact pads continously narrowed down to feedline end 
 
 _returns window_both_feedlines,pads,mask,mask_overlap (type: PolygonSet, PolygonSet, Rectangle, Rectangle)_
 
-New feedline geometry to have a 50 Ohm-line in the middle.
+New feedline geometry to have a 50 Ω-line in the middle.
 ![waveguide_extended_negative_new](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/waveguide_extended_negative_new.png)
 (mask_overlap is 1 μm bigger than mask, the orange rectangle)
 
@@ -53,8 +53,6 @@ New feedline geometry to have a 50 Ohm-line in the middle.
 
 _returns window_both_feedlines,pads,mask,mask_overlap_
 
-Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 $\epsilon$ .
+Draws the waveguide with contact pads and a T-feedline to the resonator. In the middle matched to 50 Ω.
 ![T_feedline_extended_negative](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/T_feedline_extended_negative.png)
 (mask_overlap is 1 μm bigger than mask, the orange rectangle)
-
-$-b \pm \sqrt{b^2 - 4ac} \over 2a$
