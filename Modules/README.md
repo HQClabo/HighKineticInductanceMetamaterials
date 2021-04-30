@@ -19,6 +19,7 @@ The module is divided according to the different resonator shapes and their corr
 ___
 
 # 4. Left-handed LC-Resonator metamaterial
+
 ## 4.1 Design
 ### OPKI_down(L,s,w,A,t, centre=(0,0),return_center=False,compact=False)
 
@@ -53,6 +54,13 @@ _returns oneRes (type: Cell)_
 draw one resonator with a ground strip on its right (if ground_in_between = True) and a ground pad.
 ![grounded_Res](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/grounded_Res.png)
 
+### ghosts(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29e-6, gamma=1/4, ground_in_between=True, carac = {'layer' :  1, 'datatype' : 1}, center_first = (0,0), center_last = (0,0))
+
+_returns ghostcell, ground (type: Cell, Cell)_
+
+Draws the ghosts and their ground strips and ground pads (in image, N=2, so two ghosts on each side). For N = 0 (no ghosts), ghostcell is just a rectangle (do not add to cell). However, add ground to cell, it contains outermost ground strips.
+![ghosts](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/ghosts.png)
+
 ## 4.2 Etch mask
 ### waveguide_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=2e-6, Sr = [1e-6,2e-6],Sg = 60e-6, T = 100e-6, R = 200e-6, f = 24e-6, A = 50e-6)
 
@@ -60,13 +68,6 @@ _returns window_both_feedlines (type: PolygonSet)_
 
 Draws the etch mask for a waveguide with a bended feedline without contact pads.
 ![waveguide_negative](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/waveguide_negative.png)
-
-### ghosts_negative(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29e-6, gamma=1/4, ground_in_between=True, carac = {'layer' :  1, 'datatype' : 1}, center_first = (0,0), center_last = (0,0))
-
-_returns ghostcell, ground (type: Cell, Cell)_
-
-Draws the ghosts and their ground strips and ground pads. For N = 0 (no ghosts), ghostcell is just a rectangle (do not add to cell). However, add ground to cell, it contains outermost ground strips.
-![ghosts_negative](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/ghosts_negative.png)
 
 ### waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6)
 
