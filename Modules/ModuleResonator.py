@@ -2540,6 +2540,91 @@ def T_feedline_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     
     return ground_plane_w_feed
 
+def T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = 2e-6, Sr = [1e-6,2e-6], D = 500e-6, Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, B = 60e-6, cozy = True):
+    tw = tw*1e6
+    tv = tv*1e6
+    t = t*1e6
+    Sr = Sr[0]*1e6,Sr[1]*1e6 #spacing feedline to resonator [x,y]-direction
+    D = D*1e6  #spacing to array region
+    Sg = Sg*1e6 #lateral spacing to ground planes
+    T = T*1e6 #thickness of ground planes
+    R = R*1e6 #width of ground planes
+    f = f*1e6
+    A = A*1e6
+    B = B*1e6
+    w_patch = 360.0
+    w_middle = 90.0
+    w_start = 10.0 #start width feedline
+    
+    
+    if cozy == False:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R, startM[1] - f - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw, y1 + 2*T + strip_height
+        x3, y3 = startM[0] - A/2 - Sg, startM[1] - f
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw, y3 + strip_height
+    else:
+        #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+        x1, y1 = startM[0] - A/2 - Sg - R, startM[1] - T
+        x2, y2 = x1 + 2*(R + Sg) + Q*unitcell_size[0]-tw, y1 + 2*T + strip_height - 2*f
+        x3, y3 = startM[0] - A/2 - Sg, startM[1]
+        x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw, y3 + strip_height - 2*f
+    
+    
+    width_feedline = [w_patch,w_middle,w_start]
+    width_guide = [73/45*w for w in width_feedline]
+    width_guide[1] = 31/30*width_feedline[1]
+    width_guide[2] = 11/5 * width_feedline[2]
+    dyke = [(width_guide[0]-width_feedline[0])/2,(width_guide[1]-width_feedline[1])/2,(width_guide[2]-width_feedline[2])/2]
+
+    
+    #draw outer box + window
+    big_plane = gdspy.Rectangle([x1,y1], [x2,y2])
+    window = gdspy.Rectangle([x3,y3], [x4,y4])
+    
+    #subtract window from outer box
+    ground_plane = gdspy.boolean(big_plane, window, 'not')
+    
+    #coordinates/ dimensions for FlexPath: left feedline + guide (etched away)
+    Y0 = y1 + 1/2*(2*T + strip_height)
+    points = [[x1,Y0],[startU[0] + t/2 - A - Sr[0] - w_start/2, Y0]]
+    
+    #enclosing contact pad/patch to define it/ guide will be etched away
+    guide = gdspy.FlexPath([points[0], points[1]], width_guide[2])
+    # T_bar_guide = gdspy.Rectangle([points[1][0] - w_start/2 - dyke[2], startU[1] + B + dyke[2]], [points[1][0] + w_start/2 + dyke[2], startU[1] - dyke[2]])
+    
+    # guide_T = gdspy.boolean(guide, T_bar_guide, 'or')
+    ground_plane = gdspy.boolean(ground_plane,guide,'not')
+    
+    #draw the left feedline (not etched away)
+    feedline = gdspy.FlexPath([points[0],points[1]], width_feedline[2])
+    T_bar = gdspy.Rectangle([points[1][0] - w_start/2, startU[1] + B], [points[1][0] + w_start/2, startU[1]])
+    
+    feedline = gdspy.boolean(feedline, T_bar, 'or')
+    
+    #coordinates for right feedline + guide (FlexPath)
+    Y02 = y2 - 1/2*(2*T + strip_height)
+    points2 = [[x2,Y02],[stopU[0] + t/2 + Sr[0] + w_start/2,Y02]]
+    
+    
+    #draw right guide that will be etched away (leaving the feedline inside the ground plane)
+    guide2 = gdspy.FlexPath([points2[0], points2[1]], width_guide[2])
+    # T_bar_guide2 = gdspy.Rectangle([points2[1][0] - w_start/2-dyke[2], stopU[1]+dyke[2]], [points2[1][0] - w_start/2 - dyke[2], stopU[1]-B-dyke[2]])
+    
+    # guide_T2 = gdspy.boolean(guide2, T_bar_guide2, 'or')
+    ground_plane2 = gdspy.boolean(ground_plane,guide2,'not')
+    
+    #draw the right feedline
+    feedline2 = gdspy.FlexPath([points2[0],points2[1]],width_feedline[2])
+    T_bar2 = gdspy.Rectangle([points2[1][0] - w_start/2, stopU[1]], [points2[1][0] + w_start/2, stopU[1]-B])
+
+    feedline2 = gdspy.boolean(feedline2, T_bar2, 'or')
+    
+    ground_plane_w_feed = gdspy.boolean(ground_plane2,feedline,'or')
+    ground_plane_w_feed = gdspy.boolean(ground_plane_w_feed, feedline2, 'or')
+    
+    return ground_plane_w_feed
+
 def waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6],cozy=False):
     tw = tw*1e6
     tv = tv*1e6
@@ -3326,8 +3411,8 @@ if __name__ == '__main__':
     fp = 24e-6               #vertical dimension of ground patches
     rp = 29e-6               #vertical spacing of resonator "head" to ground plane
     Q = 4                   #number of unit cells
-    N_ghost = 2             #number of ghosts: For no ghosts, put zero
-    Sf2r = [0.0,2e-6]      #spacing to feedline in [x,y]-direction
+    N_ghost = 0             #number of ghosts: For no ghosts, put zero
+    Sf2r = [10e-6,0]      #spacing to feedline in [x,y]-direction
     ground_yn = True        #ground in between yes (True) or no (False) 
     
     unitcell_size = [2*Ac*1e6 + tv*1e6 + tw*1e6,0]
@@ -3336,7 +3421,7 @@ if __name__ == '__main__':
     test_new = gdspy.Cell('negative new')
 
     
-    unitcell, ground, startM,startU, stopUy, strip_height, B, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv,tw,ep,fp,rp,gamma = k, ground_in_between = ground_yn)
+    unitcell, ground, startM,startU, stopUy, strip_height, Bc, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv,tw,ep,fp,rp,gamma = k, ground_in_between = ground_yn)
     
     ResArray = gdspy.CellArray(unitcell, Q, 1, unitcell_size)
     test.add(ResArray)
@@ -3345,14 +3430,16 @@ if __name__ == '__main__':
     centerQth = [center1st[0]-Ac*1e6 + Q*unitcell_size[0] - tw*1e6, center2nd[1]]
     
     # blib = only_waveguide(startM, startU, strip_height)
-    blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
+    # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
     # blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r)
 
-    blob, blab = ghosts(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
+    blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
+
+    # blob, blab = ghosts(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
 
     test.add(blub)
-    test.add(blab)
-    test_new.add(blob)
+    # test.add(blab)
+    # test_new.add(blob)
     # test_new.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
