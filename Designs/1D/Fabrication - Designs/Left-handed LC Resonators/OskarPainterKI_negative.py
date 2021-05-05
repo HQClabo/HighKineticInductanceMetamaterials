@@ -7,7 +7,7 @@ Created on Fri Mar 12 17:17:32 2021
 
 import numpy as np
 import gdspy
-from ModuleResonator import *
+from Modules.ModuleResonator import *
 
 """
 ~~~~~~ parameters to choose ~~~~~~
@@ -23,8 +23,8 @@ if BIG == True:
     w = 3e-6                            #width of inductor wire
     Ac = 100e-6                          #horizontal dimension of capacitor
     tc = 4e-6                           #thickness of capacitor plates
-    tv = 36e-6                          #intracell spacing
-    tw = 36e-6                          #intercell spacing
+    tv = 48e-6                          #intracell spacing
+    tw = 24e-6                          #intercell spacing
     k = 1/6                             #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
     ep = 42e-6                          #horizontal dimension of ground patches
     fp = 48e-6                          #vertical dimension of ground patches
@@ -35,7 +35,7 @@ if BIG == True:
     Rc = 400e-6                         #extent of ground planes on each side of the array
     wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,20e-6,4e-6]     #width feedline for smooth feedline
-    Q = 8                               #number of unit cells
+    Q = 4                               #number of unit cells
     N_ghost = 2                         #number of ghosts: For no ghosts, put zero
     if Tfeed == False:
         Sf2r = [0.0,4.5e-6]             #spacing to feedline in [x,y]-direction
@@ -129,9 +129,9 @@ GrdArray = gdspy.boolean(GrdArray, groundingQth, 'or')
 ground_plane = gdspy.boolean(groundplane_coords,GrdArray,'not', **carac_highPres)
 
 if BIG == False:
-    ghosts_coords, ground_ghosts = ghosts_negative(L, s, w, Ac, tc, tv,tw, N_ghost,strip_height,tg = tw,gamma=k, center_first=center1st,center_last=centerQth,ground_in_between=(ground_yn))
+    ghosts_coords, ground_ghosts = ghosts_U(L, s, w, Ac, tc, tv,tw, N_ghost,strip_height,tg = tw,gamma=k, center_first=center1st,center_last=centerQth,ground_in_between=(ground_yn))
 else:
-    ghosts_coords, ground_ghosts = ghosts_negative(L, s, w, Ac, tc, tv,tw, N_ghost,strip_height,tg = tw,e=ep, f=fp, r=rp, gamma=k, ground_in_between=(ground_yn), center_first = center1st, center_last = centerQth)
+    ghosts_coords, ground_ghosts = ghosts_U(L, s, w, Ac, tc, tv,tw, N_ghost,strip_height,tg = tw,e=ep, f=fp, r=rp, gamma=k, ground_in_between=(ground_yn), center_first = center1st, center_last = centerQth)
 
 
 if Tfeed == False:
@@ -156,5 +156,5 @@ design.add(layer2)
 
 lib = gdspy.GdsLibrary()
 lib.add(design)
-gdspy.LayoutViewer()
-# lib.write_gds("16LCRes_topo_tiny.gds")
+# gdspy.LayoutViewer()
+lib.write_gds("8LCRes_BIG_topo.gds")
