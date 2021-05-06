@@ -18,7 +18,7 @@ beta = 1.2                            #beta is the ration between (well depth):(
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
 c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [279e-6,290e-6,250e-6,260e-6]       #length of spiral
+L_spir = [250e-6,279e-6,380e-6,500e-6]       #length of spiral
 s_M = 4.5e-6                          #interspacing of inductor
 t_spir = 500e-9                       #width of spiral
 L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
@@ -83,7 +83,7 @@ if spiral_yn == True:
     well_size = [[size1[0]*alpha,size1[1]*beta]]
     top1 = [corners1[0][0]+size1[0]/2, center1[1]+size1[1]/2]
 else:
-    U_shape1, M_shape1, B1 = OPKI_down(L_spir[0],s_M, t_spir, Ac, tc,centre=center1,compact=True)
+    U_shape1, M_shape1, B1 = OPKI_down(L_spir[0],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U1 = gdspy.FlexPath(U_shape1, tc*1e6)
     M1 = gdspy.FlexPath(M_shape1, t_spir*1e6)
     LCRes1 = gdspy.Cell('LC-Resonator 1')
@@ -138,7 +138,7 @@ elif spiral_yn == True and array_in_2nd == True:
     size2 =[np.abs(corners2[1][0]-corners2[0][0]), np.abs(corners2[1][1]-corners2[0][1])]
     well_size.append([size2[0]*alpha,size2[1]*beta])
 elif spiral_yn == False and array_in_2nd == False:
-    U_shape2, M_shape2, B2 = OPKI_down(L_spir[1],s_M, t_spir, Ac, tc,centre=center1,compact=True)
+    U_shape2, M_shape2, B2 = OPKI_down(L_spir[1],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U2 = gdspy.FlexPath(U_shape2, tc*1e6)
     M2 = gdspy.FlexPath(M_shape2, t_spir*1e6)
     LCRes2 = gdspy.Cell('LC-Resonator 2')
@@ -164,7 +164,7 @@ if spiral_yn == True:
     pad3.translate(dx3, dy3)
     well_size.append([size3[0]*alpha,size3[1]*beta])
 else:
-    U_shape3, M_shape3, B3 = OPKI_down(L_spir[2],s_M, t_spir, Ac, tc,centre=center1,compact=True)
+    U_shape3, M_shape3, B3 = OPKI_down(L_spir[2],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U3 = gdspy.FlexPath(U_shape3, tc*1e6)
     M3 = gdspy.FlexPath(M_shape3, t_spir*1e6)
     LCRes3 = gdspy.Cell('LC-Resonator 3')
@@ -190,7 +190,7 @@ if spiral_yn == True:
     pad4.translate(dx4, dy4)
     well_size.append([size4[0]*alpha,size4[1]*beta])
 else:
-    U_shape4, M_shape4, B4 = OPKI_down(L_spir[3],s_M, t_spir, Ac, tc,centre=center1,compact=True)
+    U_shape4, M_shape4, B4 = OPKI_down(L_spir[3],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U4 = gdspy.FlexPath(U_shape4, tc*1e6)
     M4 = gdspy.FlexPath(M_shape4, t_spir*1e6)
     LCRes4 = gdspy.Cell('LC-Resonator 4')
@@ -264,4 +264,4 @@ structure.flatten()
 
 lib = gdspy.GdsLibrary()
 lib.add(structure)
-# lib.write_gds('hanged_L1-750um_L2-650um_L3-600um.gds')
+lib.write_gds('hanged_LCRes_L1-250um_L2-279um_L3-380um_L4-500um.gds')
