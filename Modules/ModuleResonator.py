@@ -2928,7 +2928,7 @@ def waveguide_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_he
     
     return window_both_feedlines,pads
 
-def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6],cozy = False):
+def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, w = [360e-6,90e-6,10e-6,2e-6],cozy = False,laserwriter=False):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2969,9 +2969,15 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
         x4, y4 = x3 + 2 * Sg + Q*unitcell_size[0]-tw + 2*extent_ghosts, y3 + strip_height - 2*f
     
     width_feedline = [w_patch,w_core,w_start, w_start - 1/4*(w_start - w_end), w_end + 1/4*(w_start-w_end), w_end]
-    width_guide = [11/5*w for w in width_feedline]
-    width_guide[0] = 73/45*width_feedline[0]
-    width_guide[1] = 31/30*width_feedline[1]
+    
+    if laserwriter == True:
+        width_guide = [w+6 for w in width_feedline]
+        width_guide[0] = 73/45*width_feedline[0]
+    else:
+        width_guide = [11/5*w for w in width_feedline]
+        width_guide[0] = 73/45*width_feedline[0]
+        width_guide[1] = 31/30*width_feedline[1]
+    
     bend_radii = [3*w for w in width_guide]
     dyke = [(width_guide[0]-width_feedline[0])/2,(width_guide[1]-width_feedline[1])/2,(width_guide[2]-width_feedline[2])/2]
     
@@ -3440,18 +3446,18 @@ if __name__ == '__main__':
     
     # blib = only_waveguide(startM, startU, strip_height)
     # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
-    # blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r)
+    blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True)
 
-    blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
+    # blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
 
     # blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
 
     # blob, blab = ghosts(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
 
-    test.add(blub)
+    # test.add(blub)
     # test.add(blab)
-    # test_new.add(blob)
-    # test_new.add(bleb)
+    test_new.add(blob)
+    test_new.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
     lib.add(test_new)
