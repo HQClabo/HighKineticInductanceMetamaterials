@@ -14,7 +14,8 @@ from Modules.ModuleResonator import *
 """
 
 BIG = True                    #use twice the size-parameters
-Tfeed = False                 #T-feedline (True) or smooth feedline (False)
+Tfeed = True                 #T-feedline (True) or smooth feedline (False)
+laseryn = True
 
 
 if BIG == True:
@@ -24,8 +25,8 @@ if BIG == True:
     Ac = 100e-6                          #horizontal dimension of capacitor
     tc = 4e-6                           #thickness of capacitor plates
     tv = 48e-6                          #intracell spacing
-    tw = 24e-6                          #intercell spacing
-    k = 1/6                             #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
+    tw = 48e-6                          #intercell spacing
+    k = 1/8                             #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
     ep = 42e-6                          #horizontal dimension of ground patches
     fp = 48e-6                          #vertical dimension of ground patches
     rp = 58e-6                          #vertical spacing of resonator "head" to ground plane
@@ -35,7 +36,7 @@ if BIG == True:
     Rc = 400e-6                         #extent of ground planes on each side of the array
     wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,20e-6,4e-6]     #width feedline for smooth feedline
-    Q = 4                               #number of unit cells
+    Q = 1                               #number of unit cells
     N_ghost = 2                         #number of ghosts: For no ghosts, put zero
     if Tfeed == False:
         Sf2r = [0.0,4.5e-6]             #spacing to feedline in [x,y]-direction
@@ -121,9 +122,9 @@ if ground_yn == True:
 
 
 if Tfeed == True:
-    groundplane_coords,pads,mask, mask_overlap = T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r, Sg = Sgg,T=Tg,D=Df,R=Rc,f=fp, A = Ac,B=Bc*1e-6, w=wfT)
+    groundplane_coords,pads,mask, mask_overlap = T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r, Sg = Sgg,T=Tg,D=Df,R=Rc,f=fp, A = Ac,B=Bc*1e-6, w=wfT,laserwriter=laseryn)
 else:
-    groundplane_coords,pads,mask, mask_overlap = waveguide_extended_negative_new(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc, Sr = Sf2r, Sg = Sgg, T = Tg, R = Rc, f = fp, A = Ac, w = wfs)
+    groundplane_coords,pads,mask, mask_overlap = waveguide_extended_negative_new(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc, Sr = Sf2r, Sg = Sgg, T = Tg, R = Rc, f = fp, A = Ac, w = wfs,laserwriter=laseryn)
 
 GrdArray = gdspy.boolean(GrdArray, groundingQth, 'or')
 ground_plane = gdspy.boolean(groundplane_coords,GrdArray,'not', **carac_highPres)
@@ -157,4 +158,4 @@ design.add(layer2)
 lib = gdspy.GdsLibrary()
 lib.add(design)
 # gdspy.LayoutViewer()
-lib.write_gds("8LCRes_BIG_topo.gds")
+lib.write_gds("2LCArray_Sr48um_laserwriter_Tfeed.gds")

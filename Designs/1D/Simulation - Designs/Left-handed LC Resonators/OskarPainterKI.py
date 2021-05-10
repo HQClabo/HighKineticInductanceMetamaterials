@@ -117,7 +117,7 @@ if ground_yn == True:
 
 if Tfeed == True:
     # groundplane_coords = T_feedline_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv,t=tc,Sr=Sf2r,D=Df,Sg = Sgg/2, T = Tg, R = Rg, f=fp,A=Ac,B=Bc*1e-6, cozy = True)
-    groundplane_coords = T_feedline_extended(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,D=Df,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6)
+    groundplane_coords = T_feedline_extended(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,D=Df,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
 else:
     # groundplane_coords = waveguide_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w_end=wfs[3],cozy=True)
     groundplane_coords = waveguide_extended_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w=wfs)

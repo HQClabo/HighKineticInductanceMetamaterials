@@ -18,19 +18,19 @@ beta = 1.2                            #beta is the ration between (well depth):(
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
 c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [220e-6,210e-6,200e-6,190e-6]       #length of spiral
-s_M = 4.5e-6                          #interspacing of inductor
-t_spir = 500e-9                       #width of spiral
+L_spir = [760e-6,1000e-6,800e-6,900e-6]       #length of spiral
+s_M = 7e-6                          #interspacing of inductor
+t_spir = 3e-6                       #width of spiral
 L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
 dim_pad1 = np.array([25e-6,25e-6])    #dimension of capacitor pad of spiral
-Ac = 50e-6                            # condensator width of LC-Resonator
-tc = 2e-6                             # condensator thickness of LC-Resonator
+Ac = 100e-6                            # condensator width of LC-Resonator
+tc = 4e-6                             # condensator thickness of LC-Resonator
 center1 = [0.0,0.0]                   #center of first object, used as a reference point for everything else
 N_array = 1                           #number of unit cells in spiral array
 M_uc = 2                              #how many objects in one unit cell
 tv = 5e-6                             #intracell spacing of spiral array
 tw = 10e-6                            #intercell spacing of spiral array
-spacings_to_feed = 3e-6               #spacing of each object to the feedline
+spacings_to_feed = 6e-6               #spacing of each object to the feedline
 
 spiral_yn = False
 array_in_2nd = False
@@ -264,4 +264,4 @@ structure.flatten()
 
 lib = gdspy.GdsLibrary()
 lib.add(structure)
-lib.write_gds('hanged_LCRes_L1-220um_L2-210um_L3-200um_L4-190um.gds')
+lib.write_gds('hanged_LCRes_L1-760um_L2-1000um_L3-800um_L4-900um.gds')

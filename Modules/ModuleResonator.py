@@ -2175,6 +2175,99 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
 
     return unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up
 
+def unit_cell_GGG(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'datatype' : 3},ts=3e-6,ground_in_between=True,compactRes=False):
+    A = A*1e6
+    t = t*1e6
+    w = w*1e6
+    e = e*1e6
+    f = f*1e6
+    r = r*1e6
+    tv = tv*1e6
+    tw = tw*1e6
+    ts = ts*1e6
+    xv = tv - 2*ts
+    xw = tw-2*ts
+    if xv < 0 or xw < 0:
+        print('ERROR: Cannot draw ground strips with those parameters, negative width!')
+        return gdspy.Rectangle([-20,-20],[20,20]), gdspy.Rectangle([25,-20],[30,20]), [0,0], [0,0], [0,0], 40, 40, [0,0], [0,0]
+    # print(xv,xw)
+    
+
+    if compactRes == True:
+        #get coordinates for first resonator
+        Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True), compact=True)
+        
+        #corners of 1st ground patch: down
+        box_x1, box_y1 = Mshape_d[-1][0] - e/2 - w/2, Mshape_d[-1][1]
+        box_x2, box_y2 = Mshape_d[-1][0] + w/2 + e/2, Mshape_d[-1][1]-f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of first resonator (used to draw the second one)
+        centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
+        #get coordinates for second resonator
+        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
+    else:
+        #get coordinates for first resonator
+        Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
+        
+        #corners of 1st ground patch: down
+        box_x1, box_y1 = Mshape_d[-1][0] - e/2 - w/2, Mshape_d[-1][1]
+        box_x2, box_y2 = Mshape_d[-1][0] + w/2 + e/2, Mshape_d[-1][1]-f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of first resonator (used to draw the second one)
+        centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
+        #get coordinates for second resonator
+        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
+   
+    #draw the two resonator
+    U_down = gdspy.FlexPath(Ushape_d, t, **carac)
+    M_down = gdspy.FlexPath(Mshape_d,w,**carac)  
+    U_up = gdspy.FlexPath(Ushape_u, t, **carac)
+    M_up = gdspy.FlexPath(Mshape_u, w, **carac)    
+    
+    #corners of 2nd ground patch: up
+    box_x3, box_y3 = Mshape_u[-1][0] - e/2 - w/2, Mshape_u[-1][1]
+    box_x4, box_y4 = Mshape_u[-1][0] + w/2 + e/2, Mshape_u[-1][1] + f
+    ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
+    
+    #corners of 1st ground strip in between resonators
+    strip_x1, strip_y1 = Ushape_d[-1][0] + t/2 + ts, box_y2
+    strip_x2, strip_y2 = strip_x1 + xv, Ushape_d[-2][1] + t/2 + r
+    #corners of 2nd ground strip in between resonators
+    strip_x3, strip_y3 = Ushape_u[-1][0] + t/2 + ts, box_y4
+    strip_x4, strip_y4 = strip_x3 + xw, Ushape_u[-2][1] - t/2 - r
+    
+    
+    if tv < tw:
+        print('trivial')
+    if tv == tw:
+        print('normal')
+    if tv > tw:
+        print('topological')
+    
+    unitcell = gdspy.Cell('unit cell')
+    ground = gdspy.Cell('ground')
+    unitcell.add(U_down)
+    unitcell.add(M_down)
+    ground.add(ground_box1)
+    unitcell.add(U_up)
+    unitcell.add(M_up)
+    ground.add(ground_box2)
+    
+    if ground_in_between==True:
+        ground_strip1 = gdspy.Rectangle([strip_x1,strip_y1], [strip_x2,strip_y2])
+        ground.add(ground_strip1)
+        ground_strip2 = gdspy.Rectangle([strip_x3,strip_y3], [strip_x4,strip_y4])
+        ground.add(ground_strip2)
+        
+    startM = Mshape_d[-1]
+    startU = Ushape_d[-1]
+    stopUy = Ushape_u[-1][1]
+    strip_height = np.abs(strip_y2 - strip_y1)
+
+    return unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up
+
 
 def waveguide(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6):
     tw = tw*1e6
@@ -3436,7 +3529,7 @@ if __name__ == '__main__':
     test_new = gdspy.Cell('negative new')
 
     
-    unitcell, ground, startM,startU, stopUy, strip_height, Bc, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv,tw,ep,fp,rp,gamma = k, ground_in_between = ground_yn)
+    unitcell, ground, startM,startU, stopUy, strip_height, Bc, center1st, center2nd = unit_cell_GGG(L, s, w, Ac, tc, tv,tw,ep,fp,rp,ground_in_between = ground_yn)
     
     ResArray = gdspy.CellArray(unitcell, Q, 1, unitcell_size)
     test.add(ResArray)
@@ -3446,7 +3539,7 @@ if __name__ == '__main__':
     
     # blib = only_waveguide(startM, startU, strip_height)
     # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
-    blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True)
+    # blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True)
 
     # blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
 
@@ -3456,8 +3549,8 @@ if __name__ == '__main__':
 
     # test.add(blub)
     # test.add(blab)
-    test_new.add(blob)
-    test_new.add(bleb)
+    # test_new.add(blob)
+    # test_new.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
     lib.add(test_new)
