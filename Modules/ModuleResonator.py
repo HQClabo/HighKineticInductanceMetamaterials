@@ -1975,9 +1975,9 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
             
             Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
             Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
-            U_l = gdspy.FlexPath(Ushape_l, t)
+            U_l = gdspy.FlexPath(Ushape_l, t,**carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
-            U_r = gdspy.FlexPath(Ushape_r, t)
+            U_r = gdspy.FlexPath(Ushape_r, t,**carac)
             # M_r = gdspy.FlexPath(Mshape_r,w,**carac)
             ghostcell.add([U_l,U_r])
             # ghostcell.add([U_l,M_l,U_r,M_r])
@@ -2066,6 +2066,166 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
                 strip_x1_last = center_last[0] + A/2 + xg
                 strip_y1_last = center_last[1] - r
                 strip_x2_last = strip_x1_last + gamma*min(tw,tv)
+                strip_y2_last = strip_y1_last + strip_height
+                print('N is even.')
+            
+            if ground_in_between == True:
+                ground_strip_l = gdspy.Rectangle([strip_x1_l,strip_y1_l], [strip_x2_l,strip_y2_l])
+                ground.add(ground_strip_l)
+                ground_strip_r = gdspy.Rectangle([strip_x1_r,strip_y1_r], [strip_x2_r,strip_y2_r])
+                ground.add(ground_strip_r)
+
+            
+    if ground_in_between == True:
+        ground_strip_N = gdspy.Rectangle([strip_x1_N,strip_y1_N], [strip_x2_N,strip_y2_N])
+        ground.add(ground_strip_N)
+        ground_right = gdspy.Rectangle([strip_x1_last,strip_y1_last], [strip_x2_last,strip_y2_last])
+        ground.add(ground_right)
+                    
+            # print('run ',i,'- center_left: ',center_left,' center_right: ',center_right)
+    
+    return ghostcell,ground
+
+def ghosts_U_GGG(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29e-6, ts=3e-6, ground_in_between=True, carac = {'layer' :  1, 'datatype' : 1}, center_first = (0,0), center_last = (0,0)):
+    A = A*1e6
+    t = t*1e6
+    w = w*1e6
+    e = e*1e6
+    f = f*1e6
+    r = r*1e6
+    tv = tv*1e6
+    tw = tw*1e6
+    tg = tg*1e6
+    ts = ts*1e6
+    center_left = center_first
+    center_right = center_last
+    xw = tw - 2*ts
+    xv = tv - 2*ts
+    xg = tg - 2*ts
+    
+    if xw < 0 or xv < 0 or xg < 0:
+        print('ERROR. Ground strip width negative.')
+    
+    ghostcell = gdspy.Cell('ghosts')
+    ground = gdspy.Cell('ghosts ground')
+    
+    if N == 0 and ground_in_between == True:
+        strip_x1_first = center_left[0] - A/2 - ts
+        strip_y1_first = center_left[1] + r
+        strip_x2_first = strip_x1_first - xg
+        strip_y2_first = strip_y1_first - strip_height
+        ground_left = gdspy.Rectangle([strip_x1_first,strip_y1_first], [strip_x2_first,strip_y2_first])
+        strip_x1_last = center_last[0] + A/2 + ts
+        strip_y1_last = center_last[1] - r
+        strip_x2_last = strip_x1_last + xg
+        strip_y2_last = strip_y1_last + strip_height
+        ground_right = gdspy.Rectangle([strip_x1_last,strip_y1_last], [strip_x2_last,strip_y2_last])
+        ground_edge = gdspy.boolean(ground_left, ground_right, 'or')
+        print('N_ghosts is zero.')
+        return gdspy.Rectangle([100,100],[200,200]), ground_edge
+
+    for i in range(1,N+1):
+        if (i+1)%2 == 0: #odd
+            if i == 1:
+                center_left = [center_left[0] - (A + tg), center_last[1]]
+                center_right = [center_right[0] + (A + tg), center_first[1]]
+            else:
+                center_left = [center_left[0] - (A+tw), center_last[1]]
+                center_right = [center_right[0] + (A+tw), center_first[1]]
+            
+            Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
+            Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
+            U_l = gdspy.FlexPath(Ushape_l, t,**carac)
+            # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
+            U_r = gdspy.FlexPath(Ushape_r, t,**carac)
+            # M_r = gdspy.FlexPath(Mshape_r,w,**carac)
+            ghostcell.add([U_l,U_r])
+            # ghostcell.add([U_l,M_l,U_r,M_r])
+            #ground patches
+            box_x1, box_y1 = Mshape_r[-1][0] - e/2 - w/2, Mshape_r[-1][1]
+            box_x2, box_y2 = Mshape_r[-1][0] + w/2 + e/2, Mshape_r[-1][1]-f
+            ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+            box_x3, box_y3 = Mshape_l[-1][0] - e/2 - w/2, Mshape_l[-1][1]
+            box_x4, box_y4 = Mshape_l[-1][0] + w/2 + e/2, Mshape_l[-1][1] + f
+            ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
+            ground.add([ground_box1,ground_box2])
+            
+            if i == 1:
+                #ground strips
+                strip_x1_l = center_left[0] + A/2 + ts
+                strip_y1_l = box_y4
+                strip_x2_l = strip_x1_l + xg
+                strip_y2_l = strip_y1_l - strip_height
+                strip_x1_r = center_right[0] + A/2 + ts
+                strip_y1_r = box_y2
+                strip_x2_r = strip_x1_r + xv
+                strip_y2_r = strip_y1_r + strip_height
+            else:
+                #ground strips
+                strip_x1_l = center_left[0] + A/2 + ts
+                strip_y1_l = box_y4
+                strip_x2_l = strip_x1_l + xv
+                strip_y2_l = strip_y1_l - strip_height
+                strip_x1_r = center_right[0] + A/2 + ts
+                strip_y1_r = box_y2
+                strip_x2_r = strip_x1_r + xv
+                strip_y2_r = strip_y1_r + strip_height
+            
+            if i == N:
+                strip_x1_N = center_left[0] - A/2 - ts
+                strip_y1_N = box_y4
+                strip_x2_N = strip_x1_N - xv
+                strip_y2_N = strip_y1_N - strip_height
+                strip_x1_last = center_last[0] + A/2 + ts
+                strip_y1_last = center_last[1] - r
+                strip_x2_last = strip_x1_last + xg
+                strip_y2_last = strip_y1_last + strip_height
+                print('N is odd.')
+            
+            if ground_in_between == True:
+                ground_strip_l = gdspy.Rectangle([strip_x1_l,strip_y1_l], [strip_x2_l,strip_y2_l])
+                ground.add(ground_strip_l)
+                ground_strip_r = gdspy.Rectangle([strip_x1_r,strip_y1_r], [strip_x2_r,strip_y2_r])
+                ground.add(ground_strip_r)
+            
+            # print('run ',i,'- center_left: ',center_left,' center_right: ',center_right)
+        if i%2 == 0: #even
+            center_left = [center_left[0] - (A+tv), center_first[1]]
+            center_right = [center_right[0] + (A+tv),center_last[1]]
+            Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
+            Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
+            U_l = gdspy.FlexPath(Ushape_l, t, **carac)
+            # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
+            U_r = gdspy.FlexPath(Ushape_r, t, **carac)
+            # M_r = gdspy.FlexPath(Mshape_r,w,**carac)
+            ghostcell.add([U_l,U_r])
+            # ghostcell.add([U_l,M_l,U_r,M_r])
+            #ground patches
+            box_x1, box_y1 = Mshape_l[-1][0] - e/2 - w/2, Mshape_l[-1][1]
+            box_x2, box_y2 = Mshape_l[-1][0] + w/2 + e/2, Mshape_l[-1][1]-f
+            ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+            box_x3, box_y3 = Mshape_r[-1][0] - e/2 - w/2, Mshape_r[-1][1]
+            box_x4, box_y4 = Mshape_r[-1][0] + w/2 + e/2, Mshape_r[-1][1] + f
+            ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
+            ground.add([ground_box1,ground_box2])
+            #ground strips
+            strip_x1_l = center_left[0] + A/2 + ts
+            strip_y1_l = box_y2
+            strip_x2_l = strip_x1_l + xv
+            strip_y2_l = strip_y1_l + strip_height
+            strip_x1_r = center_right[0] + A/2 + ts
+            strip_y1_r = box_y4
+            strip_x2_r = strip_x1_r + xw
+            strip_y2_r = strip_y1_r - strip_height
+            
+            if i == N:
+                strip_x1_N = center_left[0] - A/2 - ts
+                strip_y1_N = box_y2
+                strip_x2_N = strip_x1_N - xw
+                strip_y2_N = strip_y1_N + strip_height
+                strip_x1_last = center_last[0] + A/2 + ts
+                strip_y1_last = center_last[1] - r
+                strip_x2_last = strip_x1_last + xg
                 strip_y2_last = strip_y1_last + strip_height
                 print('N is even.')
             
@@ -3519,7 +3679,7 @@ if __name__ == '__main__':
     fp = 24e-6               #vertical dimension of ground patches
     rp = 29e-6               #vertical spacing of resonator "head" to ground plane
     Q = 4                   #number of unit cells
-    N_ghost = 0             #number of ghosts: For no ghosts, put zero
+    N_ghost = 2             #number of ghosts: For no ghosts, put zero
     Sf2r = [10e-6,0]      #spacing to feedline in [x,y]-direction
     ground_yn = True        #ground in between yes (True) or no (False) 
     
@@ -3545,12 +3705,12 @@ if __name__ == '__main__':
 
     # blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
 
-    # blob, blab = ghosts(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
+    blob, blab = ghosts_U_GGG(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
 
     # test.add(blub)
-    # test.add(blab)
-    # test_new.add(blob)
-    # test_new.add(bleb)
+    test.add(blab)
+    test.add(blob)
+    # test.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
     lib.add(test_new)
