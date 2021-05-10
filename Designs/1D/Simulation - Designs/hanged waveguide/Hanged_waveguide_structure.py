@@ -18,7 +18,7 @@ beta = 1.2                            #beta is the ration between (well depth):(
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
 c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [250e-6,279e-6,380e-6,500e-6]       #length of spiral
+L_spir = [220e-6,210e-6,200e-6,190e-6]       #length of spiral
 s_M = 4.5e-6                          #interspacing of inductor
 t_spir = 500e-9                       #width of spiral
 L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
@@ -264,4 +264,4 @@ structure.flatten()
 
 lib = gdspy.GdsLibrary()
 lib.add(structure)
-lib.write_gds('hanged_LCRes_L1-250um_L2-279um_L3-380um_L4-500um.gds')
+lib.write_gds('hanged_LCRes_L1-220um_L2-210um_L3-200um_L4-190um.gds')

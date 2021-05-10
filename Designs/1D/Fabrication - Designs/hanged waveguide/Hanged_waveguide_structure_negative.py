@@ -17,7 +17,7 @@ beta = 1.2                            #beta is the ration between (well depth):(
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
 c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [250e-6,279e-6,380e-6,500e-6]       #length of spiral
+L_spir = [220e-6,279e-6,380e-6,500e-6]       #length of spiral
 s_M = 4.5e-6                          #interspacing of inductor
 t_spir = 500e-9                       #width of spiral
 L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
@@ -39,11 +39,11 @@ Next, each object is drawn with its center at the reference point (i.e. origin o
 Later, they will be translated to their right position. Why do like this? To get the dimensions of each object to
 being able to draw the hanged waveguide around them.
 Naming logic: every variable used for the i-th object has the number i in it.
-The spirals (/ and pads) need to be rotated by pi/2 around reference point (=center1) after generation.
+The spirals (/ and pads) need to be rotated sometimes around reference point (=center1) after generation.
 Whenever a center needs to be specified, use the reference point (=center1).
 
 OBJECT IS A SINGLE SPIRAL WITH/WITHOUT PAD AT THE END
-1) call function to calculate the coordinates of the spiral (/ and the pad) (cs.CompTwirlSpir/cs.CompTwirlSpirPad)
+1) call function to calculate the coordinates of the spiral (/ and the pad) (CompTwirlSpir/CompTwirlSpirPad)
 2) draw the spiral (/ and the pad)
 3) create cell and add the spiral (/ and the pad)
 4) get dimensions of the object by calling .get_bounding_box() on the cell -> gives the corners of the rectangle bounding the cell. From those, obtaining size of object is straightforward.
@@ -53,7 +53,7 @@ ONLY FOR FIRST OBJECT:
     and the y-coordinate of the topmost point of the object (i.e. center1[1] + size1[1]/2)
 
 OBJECT IS AN ARRAY
-1) draw the object of which the array consists by calling its function (here: spiral -> cs.CompTwirlSpir) and actually drawing it
+1) draw the object of which the array consists by calling its function (here: spiral -> CompTwirlSpir) and actually drawing it
 2) add this object to a cell and get the size of the cell to know the dimensions of one object
 3) create unit cell with gdspy.CellArray(cell_to_repeat, 1, M_uc, [spacing in x, -(spacing in y)]).
     Since we want a vertical array, we choose 1 column and M_uc rows and spacing in x = 0.
@@ -80,7 +80,7 @@ if spiral_yn == True:
     size1 = [np.abs(corners1[1][0]-corners1[0][0]),np.abs(corners1[1][1]-corners1[0][1])]
     well_size = [[size1[0]*alpha,size1[1]*beta]]
     top1 = [corners1[0][0]+size1[0]/2, center1[1]+size1[1]/2]
-else:
+else: #draw a LC-Resonator
     U_shape1, M_shape1, B1 = OPKI_down(L_spir[0],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U1 = gdspy.FlexPath(U_shape1, tc*1e6)
     M1 = gdspy.FlexPath(M_shape1, t_spir*1e6)
@@ -94,7 +94,7 @@ else:
 
 
 #second object: n = 2
-if spiral_yn == True and array_in_2nd == False:
+if spiral_yn == True and array_in_2nd == False: #2nd object is a Twirled Spiral with pad
     L_spir2 = 1e-3
     Twirl_right2, Twirl_left2,pad2_corners = CompTwirlSpirPad(L_spir2, t_spir, L_couple*1.26, dim_pad1)
     Spiral2 = gdspy.Cell('Spiral 2')
@@ -110,7 +110,7 @@ if spiral_yn == True and array_in_2nd == False:
     LeftArm2.translate(dx2, dy2)
     pad2.translate(dx2, dy2)
     well_size.append([size2[0]*alpha, size2[1]*beta])
-elif spiral_yn == True and array_in_2nd == True:
+elif spiral_yn == True and array_in_2nd == True: #2nd object is a twirled spiral array
     Twirl_right2, Twirl_left2 = CompTwirlSpir(L_spir[1], t_spir)
     Spiral2 = gdspy.Cell('Spiral 2')
     RightArm2 = gdspy.FlexPath(Twirl_right2,t_spir*1e6, ends = 'extended')#.rotate(np.pi/2,center=center1)
@@ -135,7 +135,7 @@ elif spiral_yn == True and array_in_2nd == True:
     corners2 = SpiralArray.get_bounding_box()
     size2 =[np.abs(corners2[1][0]-corners2[0][0]), np.abs(corners2[1][1]-corners2[0][1])]
     well_size.append([size2[0]*alpha,size2[1]*beta])
-elif spiral_yn == False and array_in_2nd == False:
+elif spiral_yn == False and array_in_2nd == False: #2nd object is a LC-Resonator
     U_shape2, M_shape2, B2 = OPKI_down(L_spir[1],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U2 = gdspy.FlexPath(U_shape2, tc*1e6)
     M2 = gdspy.FlexPath(M_shape2, t_spir*1e6)
@@ -146,7 +146,7 @@ elif spiral_yn == False and array_in_2nd == False:
     well_size.append([size2[0]*alpha,size2[1]+spacings_to_feed*1e6-c_feed*1e6])
 
 #third object: n = 3
-if spiral_yn == True:
+if spiral_yn == True: #3rd object is a spiral
     Twirl_right3, Twirl_left3, pad3_corners = CompTwirlSpirPad(L_spir[2], t_spir, L_couple, dim_pad1)
     Spiral3 = gdspy.Cell('Spiral 3')
     RightArm3 = gdspy.FlexPath(Twirl_right3,t_spir*1e6, ends = 'extended').rotate(np.pi,center=center1)
@@ -161,7 +161,7 @@ if spiral_yn == True:
     LeftArm3.translate(dx3, dy3)
     pad3.translate(dx3, dy3)
     well_size.append([size3[0]*alpha,size3[1]*beta])
-else:
+else: #3rd object is a LC-Resonator
     U_shape3, M_shape3, B3 = OPKI_down(L_spir[2],s_M, t_spir, Ac, tc,centre=center1,compact=False)
     U3 = gdspy.FlexPath(U_shape3, tc*1e6)
     M3 = gdspy.FlexPath(M_shape3, t_spir*1e6)
@@ -230,36 +230,42 @@ The array has its center at the center of the first, i.e. the topmost spiral. So
 for just one spiral. Shift in x: shift[j], shift in y: - sizeonej[1]/2,
 where sizeonej refers to the size of one spiral of the array
 Take care to translate the CellArray, not the cell where the CellArray was put. Only gdspy.CellArray has the attribute .translate(dx,dy)
+
+SHIFT FOR i-th SINGLE LC-RESONATOR
+Since the LC-Resonators are drawn such that their center lies at their middle on top, they are already all perfectly
+aligned to each other horizontally, so no need to shift in y.
+Shift in x: shift[i]
+
 '''
 if spiral_yn == True:
     negative = gdspy.boolean(waveguide,RightArm1,'not')
     negative = gdspy.boolean(negative,LeftArm1,'not')
     negative = gdspy.boolean(negative,pad1,'not')
-    obj3r = RightArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-    obj3l = LeftArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-    obj3p = pad3.translate(shift[2],-size3[1]/2)# -spacings_to_feed[2]*1e6-size3[1]/2)
+    obj3r = RightArm3.translate(shift[2],-size3[1]/2)
+    obj3l = LeftArm3.translate(shift[2],-size3[1]/2)
+    obj3p = pad3.translate(shift[2],-size3[1]/2)
     negative = gdspy.boolean(negative,obj3r,'not')
     negative = gdspy.boolean(negative,obj3l,'not')
     negative = gdspy.boolean(negative,obj3p,'not')
     if array_in_2nd == True:
-        obj2 = SpiralArray.translate(shift[1],-sizeone2[1]/2)#-spacings_to_feed[1]*1e6-size1[1]/2)#-size2[1])
+        obj2 = SpiralArray.translate(shift[1],-sizeone2[1]/2)
         negative = gdspy.boolean(negative,obj2, 'not')
     else:
-        obj2r = RightArm2.translate(shift[1],-size2[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-        obj2l = LeftArm2.translate(shift[1],-size2[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-        obj2p = pad2.translate(shift[1],-size2[1]/2)# -spacings_to_feed[2]*1e6-size3[1]/2)
+        obj2r = RightArm2.translate(shift[1],-size2[1]/2)
+        obj2l = LeftArm2.translate(shift[1],-size2[1]/2)
+        obj2p = pad2.translate(shift[1],-size2[1]/2)
         negative = gdspy.boolean(negative,obj2r,'not')
         negative = gdspy.boolean(negative,obj2l,'not')
         negative = gdspy.boolean(negative,obj2p,'not')
 else:
     negative = gdspy.boolean(waveguide,U1,'not')
     negative = gdspy.boolean(negative,M1, 'not')
-    obj2u = U2.translate(shift[1], 0)# -size2[1]/2)
-    obj2m = M2.translate(shift[1], 0)#-size2[1]/2)
-    obj3u = U3.translate(shift[2], 0)# -size2[1]/2)
-    obj3m = M3.translate(shift[2], 0)#-size2[1]/2)
-    obj4u = U4.translate(shift[3], 0)# -size2[1]/2)
-    obj4m = M4.translate(shift[3], 0)#-size2[1]/2)
+    obj2u = U2.translate(shift[1], 0)
+    obj2m = M2.translate(shift[1], 0)
+    obj3u = U3.translate(shift[2], 0)
+    obj3m = M3.translate(shift[2], 0)
+    obj4u = U4.translate(shift[3], 0)
+    obj4m = M4.translate(shift[3], 0)
     negative = gdspy.boolean(negative,obj2u,'not')
     negative = gdspy.boolean(negative,obj2m,'not')
     negative = gdspy.boolean(negative,obj3u,'not')
@@ -268,7 +274,7 @@ else:
     negative = gdspy.boolean(negative,obj4m,'not')
     
 '''
-Add the translated objects to the cell with the design and flatten it just to be sure.
+Add to the cell with the design and flatten it just to be sure.
 '''
 
 structure.add(negative)
