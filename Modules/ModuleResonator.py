@@ -3302,7 +3302,7 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     
     return window_both_feedlines,pads,mask,mask_overlap
 
-def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6, w=[360e-6,90e-6,10e-6],laserwriter=False):
+def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6, w=[360e-6,90e-6,10e-6],maskdim = [150e-6,300e-6],laserwriter=False):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -3319,7 +3319,8 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     w_patch = w[0]*1e6
     w_core = w[1]*1e6
     w_start = w[2]*1e6#start width feedline
-    d_high_prec = 150 #distance from ground s.t. everything beyond is in the low-precision layer
+    maskdim = maskdim[0]*1e6, maskdim[1]*1e6
+    # d_high_prec = 150 #distance from ground s.t. everything beyond is in the low-precision layer
     d_overlap = 1 #overlap between the two precision layers
     
     #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
@@ -3406,8 +3407,8 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     pads = gdspy.boolean(pad,pad2,'or')
     # window_both_feedlines = gdspy.boolean(window_both_feedlines,pads,'or')
     
-    mask = gdspy.Rectangle([x1+R-d_high_prec,y1+(R-d_high_prec)*2], [x2-R+d_high_prec,y2+(-R+d_high_prec)*2])
-    mask_overlap = gdspy.Rectangle([x1+R - d_high_prec - d_overlap, y1+(R-d_high_prec)*2-d_overlap], [x2-R+d_high_prec + d_overlap,y2+(-R+d_high_prec)*2 + d_overlap])
+    mask = gdspy.Rectangle([x1+R-maskdim[0],y1+2*R-maskdim[1]], [x2-R+maskdim[0],y2-2*R+maskdim[1]])
+    mask_overlap = gdspy.Rectangle([x1+R - maskdim[0] - d_overlap, y1+2*R-maskdim[1]-d_overlap], [x2-R+maskdim[0] + d_overlap,y2-2*R+maskdim[1] + d_overlap])
     
     return window_both_feedlines,pads, mask, mask_overlap
 
@@ -3701,15 +3702,15 @@ if __name__ == '__main__':
     # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
     # blob, bleb, mi, mimi = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True)
 
-    # blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
+    blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True,maskdim=[300e-6,300e-6])
 
     # blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
 
-    blob, blab = ghosts_U_GGG(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
+    # blob, blab = ghosts_U_GGG(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
 
-    # test.add(blub)
-    test.add(blab)
-    test.add(blob)
+    test.add(blub)
+    # test.add(blab)
+    # test.add(blob)
     # test.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
