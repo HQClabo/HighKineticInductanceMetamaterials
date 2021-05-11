@@ -3251,17 +3251,17 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     
     #enclose contact pad with etched line (right edge)
     patch_start = [points[0][0]-dyke[0],points[0][1]]
-    patch_end = [points[2][0]+1,points[2][1]]
+    # patch_end = [points[2][0]+1,points[2][1]]
     
     #enclosing contact pad/patch to define it/ this big_patch + guide will be etched away
     big_patch = gdspy.FlexPath([patch_start,points[1]], width_guide[0])#,corners=#'circular bend',bend_radius = bend_radii[1])
-    big_patch = big_patch.segment(patch_end,width_guide[1])
+    big_patch = big_patch.segment(points[2],width_guide[1])
     guide = gdspy.FlexPath([points[2],points[3]],width_guide[1],corners='circular bend',bend_radius=bend_radii[2])
     guide = guide.segment(points[4], width_guide[2]).segment(points[5],width_guide[3]).segment(points[6],width_guide[4]).segment(points[7],width_guide[5])
     
     #draw the feedline (not etched away)
     patch = gdspy.FlexPath([points[0],points[1]], width_feedline[0])#,corners='circular bend',bend_radius = bend_radii[1])
-    patch = patch.segment(patch_end,width_feedline[1])
+    patch = patch.segment(points[2],width_feedline[1])
     feedline = gdspy.FlexPath([points[2],points[3]],width_feedline[1],corners='circular bend',bend_radius=bend_radii[2])
     feedline = feedline.segment(points[4], width_feedline[2]).segment(points[5],width_feedline[3]).segment(points[6],width_feedline[4]).segment(points[7],width_feedline[5])
     
@@ -3276,16 +3276,16 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
         points2[-1][0] = stopU[0]+ Sr[0] + w_end
     #enclose contact pad with etched line (right edge)
     patch_start2 = [points2[0][0]+dyke[0],points2[0][1]]
-    patch_end2 = [points2[2][0]-1,points2[2][1]]
+    # patch_end2 = [points2[2][0]-1,points2[2][1]]
     
     big_patch2 = gdspy.FlexPath([patch_start2,points2[1]], width_guide[0])#,corners=#'circular bend',bend_radius = bend_radii[1])
-    big_patch2 = big_patch2.segment(patch_end2,width_guide[1])
+    big_patch2 = big_patch2.segment(points2[2],width_guide[1])
     guide2 = gdspy.FlexPath([points2[2],points2[3]],width_guide[1],corners='circular bend',bend_radius=bend_radii[2])
     guide2 = guide2.segment(points2[4], width_guide[2]).segment(points2[5],width_guide[3]).segment(points2[6],width_guide[4]).segment(points2[7],width_guide[5])
    
     
     patch2 = gdspy.FlexPath([points2[0],points2[1]], width_feedline[0])#,corners='circular bend',bend_radius = bend_radii[1])
-    patch2 = patch2.segment(patch_end2,width_feedline[1])   
+    patch2 = patch2.segment(points2[2],width_feedline[1])   
     feedline2 = gdspy.FlexPath([points2[2],points2[3]],width_feedline[1],corners='circular bend',bend_radius=bend_radii[2])
     feedline2 = feedline2.segment(points2[4],width_feedline[2]).segment(points2[5],width_feedline[3]).segment(points2[6],width_feedline[4]).segment(points2[7],width_feedline[5])
 
@@ -3357,11 +3357,11 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     
     #enclose contact pad with etched line (right edge)
     patch_start = [points[0][0]- dyke[0],points[0][1]]
-    patch_end = [points[2][0]+1,points[2][1]]
+    # patch_end = [points[2][0]+1,points[2][1]]
     
     #enclosing contact pad/patch to define it/ this big_patch + guide will be etched away
     big_patch = gdspy.FlexPath([patch_start,points[1]], width_guide[0])#,corners=#'circular bend',bend_radius = bend_radii[1])
-    big_patch = big_patch.segment(patch_end,width_guide[1])
+    big_patch = big_patch.segment(points[2],width_guide[1])
     guide = gdspy.FlexPath([points[2],points[4]],width_guide[1]).segment(points[5],width_guide[2])
     T_bar_guide = gdspy.Rectangle([points[5][0] - w_start/2 - dyke[2], startU[1] + B + dyke[2]], [points[5][0] + w_start/2 + dyke[2], startU[1] - dyke[2]])
     
@@ -3369,7 +3369,7 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     
     #draw the feedline (not etched away)
     patch = gdspy.FlexPath([points[0],points[1]], width_feedline[0])#,corners='circular bend',bend_radius = bend_radii[1])
-    patch = patch.segment(patch_end,width_feedline[1])
+    patch = patch.segment(points[2],width_feedline[1])
     feedline = gdspy.FlexPath([points[2],points[4]],width_feedline[1]).segment(points[5],width_feedline[2])#,corners='circular bend',bend_radius=bend_radii[2])
     T_bar = gdspy.Rectangle([points[5][0] - w_start/2, startU[1] + B], [points[5][0] + w_start/2, startU[1]])
     
@@ -3384,17 +3384,17 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     
     #enclose contact pad with etched line (right edge)
     patch_start2 = [points2[0][0]+dyke[0],points2[0][1]]
-    patch_end2 = [points2[2][0]-1,points2[2][1]]
+    # patch_end2 = [points2[2][0]-1,points2[2][1]]
     
     big_patch2 = gdspy.FlexPath([patch_start2,points2[1]], width_guide[0])#,corners='circular bend',bend_radius = bend_radii[1])
-    big_patch2 = big_patch2.segment(patch_end2,width_guide[1])
+    big_patch2 = big_patch2.segment(points2[2],width_guide[1])
     guide2 = gdspy.FlexPath([points2[2],points2[4]],width_guide[1]).segment(points2[5],width_guide[2])#,corners='circular bend',bend_radius=bend_radii[2])
     T_bar_guide2 = gdspy.Rectangle([points2[5][0] - w_start/2-dyke[2], stopU[1]+dyke[2]], [points2[5][0] - w_start/2 - dyke[2], stopU[1]-B-dyke[2]])
     
     guide2 = gdspy.boolean(guide2, T_bar_guide2, 'or')
     
     patch2 = gdspy.FlexPath([points2[0],points2[1]], width_feedline[0])#,corners='circular bend',bend_radius = bend_radii[1])
-    patch2 = patch2.segment(patch_end2,width_feedline[1])   
+    patch2 = patch2.segment(points2[2],width_feedline[1])   
     feedline2 = gdspy.FlexPath([points2[2],points2[4]],width_feedline[1]).segment(points2[5],width_feedline[2])#,corners='circular bend',bend_radius=bend_radii[2])
     T_bar2 = gdspy.Rectangle([points2[5][0] - w_start/2, stopU[1]], [points2[5][0] + w_start/2, stopU[1]-B])
 
@@ -3705,15 +3705,15 @@ if __name__ == '__main__':
     # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
     blob = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True,maskdim=[300e-6,250e-6])
 
-    # blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True,maskdim=[300e-6,300e-6])
+    blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True,maskdim=[300e-6,300e-6])
 
     # blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
 
     # blob, blab = ghosts_U_GGG(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, ground_in_between=ground_yn, center_first = center1st, center_last = centerQth)
 
-    # test.add(blub)
+    test.add(blub)
     # test.add(blab)
-    test.add(blob)
+    test_new.add(blob)
     # test.add(bleb)
     lib = gdspy.GdsLibrary()
     lib.add(test)
