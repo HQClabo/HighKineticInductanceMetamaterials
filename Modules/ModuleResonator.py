@@ -3198,7 +3198,7 @@ def waveguide_extended_negative_new(Q, unitcell_size,startM, startU, stopU, stri
     w_start = w[2]*1e6 #start width feedline
     w_end = w[3]*1e6 #end width feedline
     maskdim = maskdim[0]*1e6, maskdim[1]*1e6
-    d_overlap = 1
+    d_overlap = 5
     
     #calculate length ghosts demand
     if (N_ghost-1)%2==0:
