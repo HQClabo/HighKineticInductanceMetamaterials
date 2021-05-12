@@ -2797,7 +2797,7 @@ def T_feedline_extended(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     
     return ground_plane_w_feed
 
-def T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = 2e-6, Sr = [1e-6,2e-6], D = 500e-6, Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, B = 60e-6, cozy = True):
+def T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = 2e-6, Sr = [1e-6,2e-6], D = 500e-6, Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6, B = 60e-6, cozy = True, w = [360e-6,90e-6,20e-6]):
     tw = tw*1e6
     tv = tv*1e6
     t = t*1e6
@@ -2809,9 +2809,9 @@ def T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, 
     f = f*1e6
     A = A*1e6
     B = B*1e6
-    w_patch = 360.0
-    w_middle = 90.0
-    w_start = 10.0 #start width feedline
+    w_patch = w[0]*1e6
+    w_middle = w[1]*1e6
+    w_start = w[2]*1e6 #start width feedline
     
     
     if cozy == False:
