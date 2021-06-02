@@ -1736,9 +1736,9 @@ def OPKI_up(L,s,w,A,t, centre=(0,0),return_center = False, compact = False):
             # print('not entered')
             
     if return_center == False:
-        return U,M
+        return U,M,B
     if return_center == True:
-        return U, M, centre
+        return U, M, B, centre
 
 
 def grounded_Res(L,s,w,A,t,tv,e=20.5e-6,f=24e-6,r=29e-6,gamma=1/4,ground_in_between=True, center = (0,0)):
@@ -2427,6 +2427,95 @@ def unit_cell_GGG(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0
     strip_height = np.abs(strip_y2 - strip_y1)
 
     return unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up
+
+def unit_cell_upup(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'datatype' : 3},gamma=1/4,ground_in_between=True,compactRes=False):
+    A = A*1e6
+    t = t*1e6
+    w = w*1e6
+    e = e*1e6
+    f = f*1e6
+    r = r*1e6
+    tv = tv*1e6
+    tw = tw*1e6
+    xv = 0.5*(tv - gamma*min(tv,tw))
+    xw = 0.5*(tw - gamma*min(tv,tw))
+    # print(xv,xw)
+    
+
+    if compactRes == True:
+        #get coordinates for first resonator
+        Ushape_1, Mshape_1, B, centre_1 = OPKI_up_mod(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True), compact=True)
+        
+        #corners of 1st ground patch: up
+        box_x1, box_y1 = Mshape_1[-1][0] - e/2 - w/2, Mshape_1[-1][1]
+        box_x2, box_y2 = Mshape_1[-1][0] + w/2 + e/2, Mshape_1[-1][1]+f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of resonator (used to draw the second one)
+        centre_2 = (Ushape_1[-1][0] + t/2 + tv + A/2,centre_1[1])
+        #get coordinates for second resonator
+        Ushape_2, Mshape_2 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2, compact = True)
+    else:
+        #get coordinates for first resonator
+        Ushape_1, Mshape_1, B, centre_1 = OPKI_up_mod(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
+        
+        #corners of 1st ground patch: down
+        box_x1, box_y1 = Mshape_1[-1][0] - e/2 - w/2, Mshape_1[-1][1]
+        box_x2, box_y2 = Mshape_1[-1][0] + w/2 + e/2, Mshape_1[-1][1]+f
+        ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
+        
+        #center of resonator (used to draw the second one)
+        centre_2 = (Ushape_1[-1][0] + t/2 + tv + A/2,centre_1[1])
+        #get coordinates for second resonator
+        Ushape_2, Mshape_2 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2)
+   
+    #draw the two resonator
+    U_1 = gdspy.FlexPath(Ushape_1, t, **carac)
+    M_1 = gdspy.FlexPath(Mshape_1,w,**carac)  
+    U_2 = gdspy.FlexPath(Ushape_2, t, **carac)
+    M_2 = gdspy.FlexPath(Mshape_2, w, **carac)    
+    
+    #corners of 2nd ground patch: up
+    box_x3, box_y3 = Mshape_2[-1][0] - e/2 - w/2, Mshape_2[-1][1]
+    box_x4, box_y4 = Mshape_2[-1][0] + w/2 + e/2, Mshape_2[-1][1] + f
+    ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
+    
+    #corners of 1st ground strip in between resonators
+    strip_x1, strip_y1 = Ushape_1[-1][0] + t/2 + xv, box_y2
+    strip_x2, strip_y2 = strip_x1 + gamma*min(tv,tw), Ushape_1[-2][1] - t/2 - r
+    #corners of 2nd ground strip in between resonators
+    strip_x3, strip_y3 = Ushape_2[-1][0] + t/2 + xw, box_y4
+    strip_x4, strip_y4 = strip_x3 + gamma*min(tv,tw), Ushape_2[-2][1] - t/2 - r
+    
+    
+    if tv < tw:
+        print('trivial')
+    if tv == tw:
+        print('normal')
+    if tv > tw:
+        print('topological')
+    
+    unitcell = gdspy.Cell('unit cell')
+    ground = gdspy.Cell('ground')
+    unitcell.add(U_1)
+    unitcell.add(M_1)
+    ground.add(ground_box1)
+    unitcell.add(U_2)
+    unitcell.add(M_2)
+    ground.add(ground_box2)
+    
+    if ground_in_between==True:
+        ground_strip1 = gdspy.Rectangle([strip_x1,strip_y1], [strip_x2,strip_y2])
+        ground.add(ground_strip1)
+        ground_strip2 = gdspy.Rectangle([strip_x3,strip_y3], [strip_x4,strip_y4])
+        ground.add(ground_strip2)
+        
+    startM = Mshape_1[-1]
+    startU = Ushape_1[-1]
+    stopUy = Ushape_2[-1][1]
+    strip_height = np.abs(strip_y2 - strip_y1)
+
+    return unitcell, ground, startM, startU, stopUy, strip_height, B, centre_1, centre_2
 
 
 def waveguide(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,R=200e-6,f=24e-6, A = 50e-6):
@@ -3414,6 +3503,7 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     mask_overlap = gdspy.Rectangle([x1+R - maskdim[0] - d_overlap, y1+2*R-maskdim[1]-d_overlap], [x2-R+maskdim[0] + d_overlap,y2-2*R+maskdim[1] + d_overlap])
     
     return window_both_feedlines,pads, mask, mask_overlap
+
 
 """
 ------------------------------------------------------------------------------

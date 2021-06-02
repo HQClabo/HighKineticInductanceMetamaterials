@@ -7,22 +7,23 @@ Created on Fri Mar 12 17:17:32 2021
 
 import numpy as np
 import gdspy
-from Modules.ModuleResonator import unit_cell_GGG, ghosts_U, T_feedline_simulation, T_feedline_extended, waveguide_simulation, waveguide_extended_new
+from Modules.ModuleResonator import unit_cell, unit_cell_GGG, ghosts_U, ghosts_U_GGG, T_feedline_simulation, T_feedline_extended, waveguide_simulation, waveguide_extended_new
 
 """
 ~~~~~~ parameters to choose ~~~~~~
 """
-BIG = True                    #use twice the size-parameters
+BIG = False                    #use twice the size-parameters
 Tfeed = True                 #T-feedline (True) or smooth feedline (False)
+GGG = False                 # GGG = separation to ground strip constant instead of ground strip width
 
 if BIG == True:
     L = 567e-6                          #total length of inductor in SI units
     s = 7e-6                            #interspacing of inductor in SI units
     w = 3e-6                            #width of inductor wire
     Ac = 100e-6                          #horizontal dimension of capacitor
-    tc = 4e-6                           #thickness of capacitor plates
-    tv = 48e-6                          #intracell spacing
-    tw = 24e-6                          #intercell spacing
+    tc = 9e-6                           #thickness of capacitor plates
+    tv = 36e-6                          #intracell spacing
+    tw = 36e-6                          #intercell spacing
     tsg = 6e-6
     k = 1/6                             #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
     ep = 42e-6                          #horizontal dimension of ground patches
@@ -30,11 +31,11 @@ if BIG == True:
     rp = 58e-6                          #vertical spacing of resonator "head" to ground plane
     Sgg = 120e-6                        #spacing last ghost to ground
     Tg = 200e-6                         #thickness of ground planes on each side of the array
-    Df = 500e-6                         #from where grounding of feedline widens
+    Df = 250e-6                         #from where grounding of feedline widens
     Rg = 400e-6                         #extent of ground planes on each side of the array
-    wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
+    wfT = [360e-6,90e-6,20e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,20e-6,4e-6]     #width feedline for smooth feedline
-    Q = 4                               #number of unit cells
+    Q = 16                               #number of unit cells
     N_ghost = 2                         #number of ghosts: For no ghosts, put zero
     if Tfeed == False:
         Sf2r = [0.0,4.5e-6]             #spacing to feedline in [x,y]-direction
@@ -46,15 +47,15 @@ else:
     w = 0.5e-6              #width of inductor wire
     Ac = 50e-6               #horizontal dimension of capacitor
     tc = 2e-6                #thickness of capacitor plates
-    tv = 18e-6              #intracell spacing
-    tw = 18e-6              #intercell spacing
-    k = 1/6                 #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
+    tv = 24e-6              #intracell spacing
+    tw = 12e-6              #intercell spacing
+    k = 1/4                 #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
     ep = 20.5e-6             #horizontal dimension of ground patches
     fp = 24e-6               #vertical dimension of ground patches
     rp = 29e-6               #vertical spacing of resonator "head" to ground plane
-    Sgg = 30e-6                        #spacing last ghost to ground
+    Sgg = 60e-6                        #spacing last ghost to ground
     Tg = 100e-6                         #thickness of ground planes on each side of the array
-    Df = 500e-6                         #from where grounding of feedline widens
+    Df = 250e-6                         #from where grounding of feedline widens
     Rg = 200e-6                         #extent of ground planes on each side of the array
     wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,10e-6,2e-6]     #width feedline for smooth feedline
@@ -86,7 +87,10 @@ carac_ground = {'layer' : 0, 'datatype' : 0}    #layer + datatype of ground plan
 8) everything stored in the cell variable design and exported as .gds file
 """
 
-unitcell, ground, startM,startU, stopUy, strip_height,Bc, center1st, center2nd = unit_cell_GGG(L, s, w, Ac, tc, tv,tw,ep,fp,rp,carac = carac_res,ts = tsg, ground_in_between = ground_yn)
+if GGG == True:
+    unitcell, ground, startM,startU, stopUy, strip_height,Bc, center1st, center2nd = unit_cell_GGG(L, s, w, Ac, tc, tv,tw,ep,fp,rp,carac = carac_res,ts = tsg, ground_in_between = ground_yn)
+else:
+    unitcell, ground, startM,startU,stopUy,strip_height, Bc, center1st, center2nd = unit_cell(L,s,w,Ac,tc,tv,tw,e=ep,f=fp,r=rp,carac=carac_res, gamma = k, ground_in_between=ground_yn)
 unitcell_size = [2*Ac*1e6 + tv*1e6 + tw*1e6,0]
 stopU = [startU[0]-Ac*1e6 + Q*unitcell_size[0]-tw*1e6, stopUy]
 
@@ -110,24 +114,31 @@ ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
 groundingQth = gdspy.boolean(ground_box1, ground_box2, 'or')
 if ground_yn == True:
     #2nd last ground strip
-    # strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - 0.5*(tv*1e6 - k*min(tv,tw)*1e6), box_y2
-    # strip_x2, strip_y2 = strip_x1 - k*min(tv,tw)*1e6, strip_y1 + strip_height
-    strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - tsg*1e6, box_y2
-    strip_x2, strip_y2 = strip_x1 - (tv*1e6 - 2*tsg*1e6), strip_y1 + strip_height
+    if GGG == True:
+         strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - tsg*1e6, box_y2
+         strip_x2, strip_y2 = strip_x1 - (tv*1e6 - 2*tsg*1e6), strip_y1 + strip_height
+    else:
+        strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - 0.5*(tv*1e6 - k*min(tv,tw)*1e6), box_y2
+        strip_x2, strip_y2 = strip_x1 - k*min(tv,tw)*1e6, strip_y1 + strip_height
+   
     ground_strip_2nd_last = gdspy.Rectangle([strip_x1,strip_y1], [strip_x2,strip_y2])
     groundingQth = gdspy.boolean(groundingQth, ground_strip_2nd_last, 'or', **carac_ground)
 
 
 if Tfeed == True:
-    # groundplane_coords = T_feedline_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv,t=tc,Sr=Sf2r,D=Df,Sg = Sgg/2, T = Tg, R = Rg, f=fp,A=Ac,B=Bc*1e-6, cozy = True)
-    groundplane_coords = T_feedline_extended(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,D=Df,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
+    groundplane_coords = T_feedline_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv,t=tc,Sr=Sf2r,D=Df,Sg = Sgg/2, T = Tg, R = Rg, f=fp,A=Ac,B=Bc*1e-6, w= wfT, cozy = False)
+    # groundplane_coords = T_feedline_extended(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,D=Df,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
 else:
-    # groundplane_coords = waveguide_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w_end=wfs[3],cozy=True)
-    groundplane_coords = waveguide_extended_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w=wfs)
+    groundplane_coords = waveguide_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w_end=wfs[3],cozy=True)
+    # groundplane_coords = waveguide_extended_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w=wfs)
 GrdArray = gdspy.boolean(GrdArray, groundingQth, 'or')
 ground_plane = gdspy.boolean(groundplane_coords,GrdArray,'or', **carac_ground)
 
-ghosts_coords, ground_ghosts = ghosts_U(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, carac = carac_ground, center_first = center1st, center_last = centerQth)
+if GGG == True:
+    ghosts_coords, ground_ghosts = ghosts_U_GGG(L,s,w,Ac,tc,tv,tw,N_ghost, strip_height, tg = tw, e=ep, f=fp, r=rp, ts=tsg, ground_in_between=ground_yn, carac = carac_ground, center_first = center1st, center_last = centerQth)
+else:
+    ghosts_coords, ground_ghosts = ghosts_U(L,s,w,Ac,tc,tv,tw,N_ghost,strip_height,tg = tw, e = ep, f=fp, r=rp, gamma=k, ground_in_between=ground_yn, carac = carac_ground, center_first = center1st, center_last = centerQth)
+
 
 if Tfeed == False:
     ground_plane = gdspy.boolean(ground_plane, ground_ghosts, 'or', **carac_ground)
@@ -141,7 +152,7 @@ design.flatten()
 lib = gdspy.GdsLibrary()
 lib.add(design)
 gdspy.LayoutViewer()
-lib.write_gds("8LC-Array_topo_laserwriter.gds")
+lib.write_gds("16LC-Array_topo.gds")
 
 """
 ~~~~~ Vincent's original version below ~~~~~~
