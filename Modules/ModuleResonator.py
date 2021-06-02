@@ -1818,7 +1818,7 @@ def ghosts(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29
                 center_left = [center_left[0] - (A+tw), center_last[1]]
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
-            Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
+            Ushape_l, Mshape_l, B= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
             Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
             U_l = gdspy.FlexPath(Ushape_l, t,**carac)
             M_l = gdspy.FlexPath(Mshape_l,w,**carac)
@@ -1878,7 +1878,7 @@ def ghosts(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=29
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
             Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
-            Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
+            Ushape_r,Mshape_r, B = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
             U_l = gdspy.FlexPath(Ushape_l, t, **carac)
             M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             U_r = gdspy.FlexPath(Ushape_r, t, **carac)
@@ -1973,7 +1973,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
                 center_left = [center_left[0] - (A+tw), center_last[1]]
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
-            Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
+            Ushape_l, Mshape_l, B= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
             Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
             U_l = gdspy.FlexPath(Ushape_l, t,**carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
@@ -2033,7 +2033,7 @@ def ghosts_U(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6, r=
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
             Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
-            Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
+            Ushape_r,Mshape_r, B = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
             U_l = gdspy.FlexPath(Ushape_l, t, **carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             U_r = gdspy.FlexPath(Ushape_r, t, **carac)
@@ -2133,7 +2133,7 @@ def ghosts_U_GGG(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6
                 center_left = [center_left[0] - (A+tw), center_last[1]]
                 center_right = [center_right[0] + (A+tw), center_first[1]]
             
-            Ushape_l, Mshape_l= OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
+            Ushape_l, Mshape_l,B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_left)
             Ushape_r, Mshape_r, B= OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,centre=center_right)
             U_l = gdspy.FlexPath(Ushape_l, t,**carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
@@ -2193,7 +2193,7 @@ def ghosts_U_GGG(L,s,w,A,t,tv,tw,N, strip_height, tg = 15e-6, e=20.5e-6, f=24e-6
             center_left = [center_left[0] - (A+tv), center_first[1]]
             center_right = [center_right[0] + (A+tv),center_last[1]]
             Ushape_l,Mshape_l, B = OPKI_down(L, s, w*1e-6,A*1e-6,t*1e-6, centre=center_left)
-            Ushape_r,Mshape_r = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
+            Ushape_r,Mshape_r,B = OPKI_up(L, s, w*1e-6,A*1e-6,t*1e-6, centre = center_right)
             U_l = gdspy.FlexPath(Ushape_l, t, **carac)
             # M_l = gdspy.FlexPath(Mshape_l,w,**carac)
             U_r = gdspy.FlexPath(Ushape_r, t, **carac)
@@ -2272,7 +2272,7 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
         #center of first resonator (used to draw the second one)
         centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
         #get coordinates for second resonator
-        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
+        Ushape_u, Mshape_u,B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
     else:
         #get coordinates for first resonator
         Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
@@ -2285,7 +2285,7 @@ def unit_cell(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'd
         #center of first resonator (used to draw the second one)
         centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
         #get coordinates for second resonator
-        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
+        Ushape_u, Mshape_u,B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
    
     #draw the two resonator
     U_down = gdspy.FlexPath(Ushape_d, t, **carac)
@@ -2365,7 +2365,7 @@ def unit_cell_GGG(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0
         #center of first resonator (used to draw the second one)
         centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
         #get coordinates for second resonator
-        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
+        Ushape_u, Mshape_u, B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up, compact = True)
     else:
         #get coordinates for first resonator
         Ushape_d, Mshape_d, B, centre_d = OPKI_down(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
@@ -2378,7 +2378,7 @@ def unit_cell_GGG(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0
         #center of first resonator (used to draw the second one)
         centre_up = (Ushape_d[-1][0] + t/2 + tv + A/2,box_y2 + r)
         #get coordinates for second resonator
-        Ushape_u, Mshape_u = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
+        Ushape_u, Mshape_u,B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_up)
    
     #draw the two resonator
     U_down = gdspy.FlexPath(Ushape_d, t, **carac)
@@ -2444,7 +2444,7 @@ def unit_cell_upup(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 
 
     if compactRes == True:
         #get coordinates for first resonator
-        Ushape_1, Mshape_1, B, centre_1 = OPKI_up_mod(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True), compact=True)
+        Ushape_1, Mshape_1, B, centre_1 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True), compact=True)
         
         #corners of 1st ground patch: up
         box_x1, box_y1 = Mshape_1[-1][0] - e/2 - w/2, Mshape_1[-1][1]
@@ -2454,10 +2454,10 @@ def unit_cell_upup(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 
         #center of resonator (used to draw the second one)
         centre_2 = (Ushape_1[-1][0] + t/2 + tv + A/2,centre_1[1])
         #get coordinates for second resonator
-        Ushape_2, Mshape_2 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2, compact = True)
+        Ushape_2, Mshape_2, B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2, compact = True)
     else:
         #get coordinates for first resonator
-        Ushape_1, Mshape_1, B, centre_1 = OPKI_up_mod(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
+        Ushape_1, Mshape_1, B, centre_1 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,return_center=(True))
         
         #corners of 1st ground patch: down
         box_x1, box_y1 = Mshape_1[-1][0] - e/2 - w/2, Mshape_1[-1][1]
