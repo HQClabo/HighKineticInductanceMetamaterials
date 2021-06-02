@@ -2467,7 +2467,7 @@ def unit_cell_upup(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 
         #center of resonator (used to draw the second one)
         centre_2 = (Ushape_1[-1][0] + t/2 + tv + A/2,centre_1[1])
         #get coordinates for second resonator
-        Ushape_2, Mshape_2 = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2)
+        Ushape_2, Mshape_2, B = OPKI_up(L,s,w*1e-6,A*1e-6,t*1e-6,centre=centre_2)
    
     #draw the two resonator
     U_1 = gdspy.FlexPath(Ushape_1, t, **carac)
