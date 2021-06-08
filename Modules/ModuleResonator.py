@@ -3504,6 +3504,117 @@ def T_feedline_extended_negative(Q, unitcell_size,startM, startU, stopU, strip_h
     
     return window_both_feedlines,pads, mask, mask_overlap
 
+def T_feedline_extended_negative_upup_ghost(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, M, U, t = 2e-6, Sr = [1e-6,2e-6], Sg = 60e-6,T=100e-6,D=200e-6,R=200e-6,f=24e-6, A = 50e-6,B=60e-6, w=[360e-6,90e-6,4e-6],maskdim = [150e-6,300e-6],laserwriter=False,cozy = False):
+    tw = tw*1e6
+    tv = tv*1e6
+    t = t*1e6
+    Sr = Sr[0]*1e6,Sr[1]*1e6 #spacing feedline to resonator [x,y]-direction
+    Sg = Sg*1e6 #lateral spacing to ground planes
+    T = T*1e6 #thickness of ground planes
+    D = D*1e6 #spacing to array region
+    R = R*1e6 #ground plane width
+    # E = 800
+    chip_length = 6200
+    f = f*1e6
+    A = A*1e6
+    B = B*1e6
+    w_patch = w[0]*1e6
+    w_core = w[1]*1e6
+    w_start = w[2]*1e6#start width feedline
+    maskdim = maskdim[0]*1e6, maskdim[1]*1e6
+    # d_high_prec = 150 #distance from ground s.t. everything beyond is in the low-precision layer
+    d_overlap = 1 #overlap between the two precision layers
+    
+    M[-1][1] = M[-2][1] + 1/2*(M[-1][1]-M[-2][1])
+    
+    if cozy == True:
+        x3,y3 = startM[0] - 3*A/2 - tw - 2*w_start, startM[1]-strip_height + 2*f
+        x4,y4 = startM[0] + A + Q*unitcell_size[0] + 2*w_start, startM[1]
+    else:
+        x3, y3 = startM[0] - A/2 - Sr[0] - 2*w_start, startM[1] - strip_height + 2*f
+        x4, y4 = x3 + 2 * Sr[0] + 4*w_start + Q*unitcell_size[0]-tw, startM[1] + f
+    
+    #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+    
+    x1, y1 = x3 - R, startM[1] + T
+    x2, y2 = x4 + R, y1 - 2*T - strip_height + 2*f   
+    
+    width_feedline = [w_patch,w_core,w_start]
+    width_guide = [73/45*w for w in width_feedline]
+    if laserwriter == False:
+        width_guide[1] = 31/30*width_feedline[1]
+        width_guide[2] = 11/5 * width_feedline[2]
+    else:
+        width_guide[1] = 16/15*width_feedline[1]
+        width_guide[2] = 11/5 * width_feedline[2]
+
+    dyke = [(width_guide[0]-width_feedline[0])/2,(width_guide[1]-width_feedline[1])/2,(width_guide[2]-width_feedline[2])/2]
+    
+    
+    E = 0.5*(chip_length - (x2-x1)) - (width_guide[0]-width_feedline[0])/2
+    
+    #draw outer box + window
+    window = gdspy.Rectangle([x3,y3], [x4,y4])
+    
+    #coordinates/ dimensions for FlexPath: right feedline + guide (etched away)
+    Y0 = y3 + 1/2*np.abs(y3-y4)
+    points = [[x1-E,Y0],[x1-7*E/8, Y0],[x1-3*E/4, Y0],[x1,Y0],[x3 - D, Y0],[startM[0]-3*A/2-tw,Y0]]
+    
+    #enclose contact pad with etched line (right edge)
+    patch_start = [points[0][0]- dyke[0],points[0][1]]
+    
+    #enclosing contact pad/patch to define it/ this big_patch + guide will be etched away
+    big_patch = gdspy.FlexPath([patch_start,points[1]], width_guide[0])
+    big_patch = big_patch.segment(points[2],width_guide[1])
+    guide = gdspy.FlexPath([points[2],points[4]],width_guide[1]).segment(points[5],width_guide[2])
+    
+    
+    #draw the feedline (not etched away)
+    patch = gdspy.FlexPath([points[0],points[1]], width_feedline[0])
+    patch = patch.segment(points[2],width_feedline[1])
+    feedline = gdspy.FlexPath([points[2],points[4]],width_feedline[1]).segment(points[5],width_feedline[2])
+    ghost_U = gdspy.FlexPath(U, t).translate(startM[0]-A-tw,0)#startU[1]-B)
+    ghost_M = gdspy.FlexPath(M,0.5).translate(startM[0]-A-tw,0)#startU[1]-B)
+    
+    feedline = gdspy.boolean(feedline,ghost_U,'or')
+    feedline = gdspy.boolean(feedline,ghost_M, 'or')
+    
+    pad = gdspy.boolean(big_patch,patch, 'not')
+    line = gdspy.boolean(guide,feedline, 'not')
+    
+    #coordinates for left feedline + guide (FlexPath)
+    points2 = [[x2+E,Y0],[x2+7*E/8, Y0],[x2+3*E/4, Y0],[x2,Y0],[x4 + D, Y0],[startM[0]-A/2+Q*unitcell_size[0]+A,Y0]]
+    
+    #enclose contact pad with etched line (right edge)
+    patch_start2 = [points2[0][0]+dyke[0],points2[0][1]]
+    
+    big_patch2 = gdspy.FlexPath([patch_start2,points2[1]], width_guide[0])
+    big_patch2 = big_patch2.segment(points2[2],width_guide[1])
+    guide2 = gdspy.FlexPath([points2[2],points2[4]],width_guide[1]).segment(points2[5],width_guide[2])
+    
+    patch2 = gdspy.FlexPath([points2[0],points2[1]], width_feedline[0])
+    patch2 = patch2.segment(points2[2],width_feedline[1])   
+    feedline2 = gdspy.FlexPath([points2[2],points2[4]],width_feedline[1]).segment(points2[5],width_feedline[2])
+    ghost_U2 = gdspy.FlexPath(U, t).translate(startM[0]+Q*unitcell_size[0],0)#startU[1]-B)
+    ghost_M2 = gdspy.FlexPath(M,0.5).translate(startM[0]+Q*unitcell_size[0],0)#startU[1]-B)
+    
+    feedline2 = gdspy.boolean(feedline2,ghost_U2,'or')
+    feedline2 = gdspy.boolean(feedline2,ghost_M2, 'or')
+
+    pad2 = gdspy.boolean(big_patch2, patch2, 'not')
+    line2 = gdspy.boolean(guide2,feedline2, 'not')
+    
+    window_left_guide = gdspy.boolean(window, line, 'or')
+    window_both_guides = gdspy.boolean(window_left_guide, line2, 'or')
+    window_left_feedline = gdspy.boolean(window_both_guides,feedline ,'not')
+    window_both_feedlines = gdspy.boolean(window_left_feedline,feedline2,'not')
+    pads = gdspy.boolean(pad,pad2,'or')
+    
+    mask = gdspy.Rectangle([x1+R-maskdim[0],y1+2*R-maskdim[1]], [x2-R+maskdim[0],y2-2*R+maskdim[1]])
+    mask_overlap = gdspy.Rectangle([x1+R - maskdim[0] - d_overlap, y1+2*R-maskdim[1]-d_overlap], [x2-R+maskdim[0] + d_overlap,y2-2*R+maskdim[1] + d_overlap])
+    
+    return window_both_feedlines,pads, mask, mask_overlap
+
 
 """
 ------------------------------------------------------------------------------
