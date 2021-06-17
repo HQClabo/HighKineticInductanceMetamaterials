@@ -81,13 +81,15 @@ Same as ghosts_U, but ground strips are adapted such that the spacing to ground 
 
 _returns unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up (type: Cell, Cell, list, Array of float64, float64, float64, tuple, tuple)_
 
-
+![unit_cell](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/unit_cell.png)
 
 
 
 ### unit_cell_GGG(L,s,w,A,t,tv,tw,e=20.5e-6,f=24e-6,r=29e-6,carac = {'layer' : 0, 'datatype' : 3},ts=3e-6,ground_in_between=True,compactRes=False)
 
+_returns unitcell, ground, startM, startU, stopUy, strip_height, B, centre_d, centre_up (type: Cell, Cell, list, Array of float64, float64, float64, tuple, tuple)_
 
+![unit_cell_GGG](https://github.com/HQClabo/HighKineticInductanceMetamaterials/blob/main/Modules/pictures/unit_cell_GGG.png)
 
 ## 
 
