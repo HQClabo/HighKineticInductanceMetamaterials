@@ -3883,18 +3883,18 @@ if __name__ == '__main__':
     ep = 20.5e-6             #horizontal dimension of ground patches
     fp = 24e-6               #vertical dimension of ground patches
     rp = 29e-6               #vertical spacing of resonator "head" to ground plane
-    Q = 1                   #number of unit cells
+    Q = 2                   #number of unit cells
     N_ghost = 2             #number of ghosts: For no ghosts, put zero
     Sf2r = [10e-6,0]      #spacing to feedline in [x,y]-direction
     ground_yn = True        #ground in between yes (True) or no (False) 
     
     unitcell_size = [2*Ac*1e6 + tv*1e6 + tw*1e6,0]
     
-    test = gdspy.Cell('negative')
+    # test = gdspy.Cell('negative')
     test_new = gdspy.Cell('negative new')
 
     
-    unitcell, ground, startM,startU, stopUy, strip_height, Bc, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv,tw,ep,fp,rp,ground_in_between = ground_yn)
+    unitcell, ground, startM,startU, stopUy, strip_height, Bc, center1st, center2nd = unit_cell(L, s, w, Ac, tc, tv, tw,e=ep,f=fp,r=rp,gamma=k)
     
     ResArray = gdspy.CellArray(unitcell, Q, 1, unitcell_size)
     test_new.add(ResArray)
@@ -3905,20 +3905,21 @@ if __name__ == '__main__':
     # blib = only_waveguide(startM, startU, strip_height)
     # blub = waveguide_extended_new(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, N_ghost, t = tc, Sr = Sf2r,f=fp, A = Ac)
     # blob = waveguide_extended_negative_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, Sr=Sf2r,laserwriter=True,maskdim=[300e-6,250e-6])
+    blub = waveguide(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=[3e-6,5e-6],f=fp,A=Ac)
 
     # blub = T_feedline_extended_negative(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,N_ghost,t=tc,Sr=Sf2r,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True,maskdim=[300e-6,300e-6])
 
     # blub = T_feedline_simulation(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, t = tc, Sr = Sf2r,f=fp, A = Ac, B = Bc*1e-6, R=10e-6)
 
-    blob, blab = ghosts_U_GGG(L, s, w, Ac, tc, tv, tw, N_ghost, strip_height,tg=tw,center_first=center1st,center_last=centerQth)
+    # blob, blab = ghosts_U_GGG(L, s, w, Ac, tc, tv, tw, N_ghost, strip_height,tg=tw,center_first=center1st,center_last=centerQth)
 
-    # test.add(blub)
+    test_new.add(blub)
     test_new.add(unitcell)
     test_new.add(ground)
     test_new.flatten()
     # test.add(bleb)
     lib = gdspy.GdsLibrary()
-    lib.add(test)
+    # lib.add(test)
     lib.add(test_new)
     gdspy.LayoutViewer()
     # lib.write_gds("Only waveguide.gds")

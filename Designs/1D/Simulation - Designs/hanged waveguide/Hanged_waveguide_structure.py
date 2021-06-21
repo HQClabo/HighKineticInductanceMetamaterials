@@ -12,18 +12,18 @@ import numpy as np
 specifiy relevant parameters
 '''
 
-n = 4                                 #how many objects to put along the transmission line
+n = 2                                 #how many objects to put along the transmission line
 alpha = 2                             #alpha gives the ratio between (well width):(object width)
 beta = 1.2                            #beta is the ration between (well depth):(object height)
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
 c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [760e-6,1000e-6,800e-6,900e-6]       #length of spiral
-s_M = 7e-6                          #interspacing of inductor
-t_spir = 3e-6                       #width of spiral
-L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
+L_spir = [227e-6,279e-6]              #length of spiral
+s_M = 4.5e-6                          #interspacing of inductor
+t_spir = 0.5e-6                       #width of spiral
+L_couple =50e-6                       #length of spiral parallel to transmission line, ending in square capacitor
 dim_pad1 = np.array([25e-6,25e-6])    #dimension of capacitor pad of spiral
-Ac = 100e-6                            # condensator width of LC-Resonator
+Ac = [38e-6,50e-6,100e-6]             # condensator width of LC-Resonator
 tc = 4e-6                             # condensator thickness of LC-Resonator
 center1 = [0.0,0.0]                   #center of first object, used as a reference point for everything else
 N_array = 1                           #number of unit cells in spiral array
@@ -83,7 +83,7 @@ if spiral_yn == True:
     well_size = [[size1[0]*alpha,size1[1]*beta]]
     top1 = [corners1[0][0]+size1[0]/2, center1[1]+size1[1]/2]
 else:
-    U_shape1, M_shape1, B1 = OPKI_down(L_spir[0],s_M, t_spir, Ac, tc,centre=center1,compact=False)
+    U_shape1, M_shape1, B1 = OPKI_down(L_spir[0],s_M, t_spir, Ac[0], tc,centre=center1,compact=False)
     U1 = gdspy.FlexPath(U_shape1, tc*1e6)
     M1 = gdspy.FlexPath(M_shape1, t_spir*1e6)
     LCRes1 = gdspy.Cell('LC-Resonator 1')
@@ -138,7 +138,7 @@ elif spiral_yn == True and array_in_2nd == True:
     size2 =[np.abs(corners2[1][0]-corners2[0][0]), np.abs(corners2[1][1]-corners2[0][1])]
     well_size.append([size2[0]*alpha,size2[1]*beta])
 elif spiral_yn == False and array_in_2nd == False:
-    U_shape2, M_shape2, B2 = OPKI_down(L_spir[1],s_M, t_spir, Ac, tc,centre=center1,compact=False)
+    U_shape2, M_shape2, B2 = OPKI_down(L_spir[1],s_M, t_spir, Ac[1], tc,centre=center1,compact=False)
     U2 = gdspy.FlexPath(U_shape2, tc*1e6)
     M2 = gdspy.FlexPath(M_shape2, t_spir*1e6)
     LCRes2 = gdspy.Cell('LC-Resonator 2')
@@ -148,56 +148,56 @@ elif spiral_yn == False and array_in_2nd == False:
     well_size.append([size2[0]*alpha,size2[1]+spacings_to_feed*1e6-c_feed*1e6])
 
 #third object: n = 3
-if spiral_yn == True:
-    Twirl_right3, Twirl_left3, pad3_corners = CompTwirlSpirPad(L_spir[2], t_spir, L_couple, dim_pad1)
-    Spiral3 = gdspy.Cell('Spiral 3')
-    RightArm3 = gdspy.FlexPath(Twirl_right3,t_spir*1e6, ends = 'extended').rotate(np.pi,center=center1)
-    LeftArm3 = gdspy.FlexPath(Twirl_left3,t_spir*1e6).rotate(np.pi,center=center1)
-    pad3 = gdspy.Rectangle(pad3_corners[0],pad3_corners[1]).rotate(np.pi,center=center1)
-    Spiral3.add([RightArm3,LeftArm3,pad3])
-    corners3 = Spiral3.get_bounding_box()
-    size3 = [np.abs(corners3[1][0]-corners3[0][0]),np.abs(corners3[1][1]-corners3[0][1])]
-    dx3 = top1[0] - (corners3[0][0] + size3[0]/2)
-    dy3 = top1[1] - (corners3[0][1] + size3[1]/2)
-    RightArm3.translate(dx3, dy3)
-    LeftArm3.translate(dx3, dy3)
-    pad3.translate(dx3, dy3)
-    well_size.append([size3[0]*alpha,size3[1]*beta])
-else:
-    U_shape3, M_shape3, B3 = OPKI_down(L_spir[2],s_M, t_spir, Ac, tc,centre=center1,compact=False)
-    U3 = gdspy.FlexPath(U_shape3, tc*1e6)
-    M3 = gdspy.FlexPath(M_shape3, t_spir*1e6)
-    LCRes3 = gdspy.Cell('LC-Resonator 3')
-    LCRes3.add([U3,M3])
-    corners3 = LCRes3.get_bounding_box()
-    size3 = [np.abs(corners3[1][0]-corners3[0][0]),np.abs(corners3[1][1]-corners3[0][1])]
-    well_size.append([size3[0]*alpha,size3[1]+spacings_to_feed*1e6-c_feed*1e6])
+# if spiral_yn == True:
+#     Twirl_right3, Twirl_left3, pad3_corners = CompTwirlSpirPad(L_spir[2], t_spir, L_couple, dim_pad1)
+#     Spiral3 = gdspy.Cell('Spiral 3')
+#     RightArm3 = gdspy.FlexPath(Twirl_right3,t_spir*1e6, ends = 'extended').rotate(np.pi,center=center1)
+#     LeftArm3 = gdspy.FlexPath(Twirl_left3,t_spir*1e6).rotate(np.pi,center=center1)
+#     pad3 = gdspy.Rectangle(pad3_corners[0],pad3_corners[1]).rotate(np.pi,center=center1)
+#     Spiral3.add([RightArm3,LeftArm3,pad3])
+#     corners3 = Spiral3.get_bounding_box()
+#     size3 = [np.abs(corners3[1][0]-corners3[0][0]),np.abs(corners3[1][1]-corners3[0][1])]
+#     dx3 = top1[0] - (corners3[0][0] + size3[0]/2)
+#     dy3 = top1[1] - (corners3[0][1] + size3[1]/2)
+#     RightArm3.translate(dx3, dy3)
+#     LeftArm3.translate(dx3, dy3)
+#     pad3.translate(dx3, dy3)
+#     well_size.append([size3[0]*alpha,size3[1]*beta])
+# else:
+#     U_shape3, M_shape3, B3 = OPKI_down(L_spir[2],s_M, t_spir, Ac, tc,centre=center1,compact=False)
+#     U3 = gdspy.FlexPath(U_shape3, tc*1e6)
+#     M3 = gdspy.FlexPath(M_shape3, t_spir*1e6)
+#     LCRes3 = gdspy.Cell('LC-Resonator 3')
+#     LCRes3.add([U3,M3])
+#     corners3 = LCRes3.get_bounding_box()
+#     size3 = [np.abs(corners3[1][0]-corners3[0][0]),np.abs(corners3[1][1]-corners3[0][1])]
+#     well_size.append([size3[0]*alpha,size3[1]+spacings_to_feed*1e6-c_feed*1e6])
     
-#fourth object: n = 4
-if spiral_yn == True:
-    Twirl_right4, Twirl_left4, pad4_corners = CompTwirlSpirPad(L_spir[3], t_spir, L_couple, dim_pad1)
-    Spiral4 = gdspy.Cell('Spiral 4')
-    RightArm4 = gdspy.FlexPath(Twirl_right4,t_spir*1e6, ends = 'extended').rotate(np.pi,center=center1)
-    LeftArm4 = gdspy.FlexPath(Twirl_left4,t_spir*1e6).rotate(np.pi,center=center1)
-    pad4 = gdspy.Rectangle(pad4_corners[0],pad4_corners[1]).rotate(np.pi,center=center1)
-    Spiral4.add([RightArm4,LeftArm4,pad4])
-    corners4 = Spiral4.get_bounding_box()
-    size4 = [np.abs(corners4[1][0]-corners4[0][0]),np.abs(corners4[1][1]-corners4[0][1])]
-    dx4 = top1[0] - (corners4[0][0] + size4[0]/2)
-    dy4 = top1[1] - (corners4[0][1] + size4[1]/2)
-    RightArm4.translate(dx4, dy4)
-    LeftArm4.translate(dx4, dy4)
-    pad4.translate(dx4, dy4)
-    well_size.append([size4[0]*alpha,size4[1]*beta])
-else:
-    U_shape4, M_shape4, B4 = OPKI_down(L_spir[3],s_M, t_spir, Ac, tc,centre=center1,compact=False)
-    U4 = gdspy.FlexPath(U_shape4, tc*1e6)
-    M4 = gdspy.FlexPath(M_shape4, t_spir*1e6)
-    LCRes4 = gdspy.Cell('LC-Resonator 4')
-    LCRes4.add([U4,M4])
-    corners4 = LCRes4.get_bounding_box()
-    size4 = [np.abs(corners4[1][0]-corners4[0][0]),np.abs(corners4[1][1]-corners4[0][1])]
-    well_size.append([size4[0]*alpha,size4[1]+spacings_to_feed*1e6-c_feed*1e6])
+# #fourth object: n = 4
+# if spiral_yn == True:
+#     Twirl_right4, Twirl_left4, pad4_corners = CompTwirlSpirPad(L_spir[3], t_spir, L_couple, dim_pad1)
+#     Spiral4 = gdspy.Cell('Spiral 4')
+#     RightArm4 = gdspy.FlexPath(Twirl_right4,t_spir*1e6, ends = 'extended').rotate(np.pi,center=center1)
+#     LeftArm4 = gdspy.FlexPath(Twirl_left4,t_spir*1e6).rotate(np.pi,center=center1)
+#     pad4 = gdspy.Rectangle(pad4_corners[0],pad4_corners[1]).rotate(np.pi,center=center1)
+#     Spiral4.add([RightArm4,LeftArm4,pad4])
+#     corners4 = Spiral4.get_bounding_box()
+#     size4 = [np.abs(corners4[1][0]-corners4[0][0]),np.abs(corners4[1][1]-corners4[0][1])]
+#     dx4 = top1[0] - (corners4[0][0] + size4[0]/2)
+#     dy4 = top1[1] - (corners4[0][1] + size4[1]/2)
+#     RightArm4.translate(dx4, dy4)
+#     LeftArm4.translate(dx4, dy4)
+#     pad4.translate(dx4, dy4)
+#     well_size.append([size4[0]*alpha,size4[1]*beta])
+# else:
+#     U_shape4, M_shape4, B4 = OPKI_down(L_spir[3],s_M, t_spir, Ac, tc,centre=center1,compact=False)
+#     U4 = gdspy.FlexPath(U_shape4, tc*1e6)
+#     M4 = gdspy.FlexPath(M_shape4, t_spir*1e6)
+#     LCRes4 = gdspy.Cell('LC-Resonator 4')
+#     LCRes4.add([U4,M4])
+#     corners4 = LCRes4.get_bounding_box()
+#     size4 = [np.abs(corners4[1][0]-corners4[0][0]),np.abs(corners4[1][1]-corners4[0][1])]
+#     well_size.append([size4[0]*alpha,size4[1]+spacings_to_feed*1e6-c_feed*1e6])
 
 '''
 After creation of every object to be hanged on the transmission line (no resonators were harmed in production of this programm),
@@ -236,26 +236,26 @@ Take care to translate the CellArray, not the cell where the CellArray was put. 
 
 if spiral_yn == True:
     structure.add(Spiral1)
-    obj3r = RightArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-    obj3l = LeftArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
-    obj3p = pad3.translate(shift[2],-size3[1]/2)# -spacings_to_feed[2]*1e6-size3[1]/2)
+    # obj3r = RightArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
+    # obj3l = LeftArm3.translate(shift[2],-size3[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
+    # obj3p = pad3.translate(shift[2],-size3[1]/2)# -spacings_to_feed[2]*1e6-size3[1]/2)
     if array_in_2nd == True:
         obj2 = SpiralArray.translate(shift[1],-sizeone2[1]/2)#-spacings_to_feed[1]*1e6-size1[1]/2)#-size2[1])
-        structure.add([obj2,obj3r,obj3l,obj3p])
+        structure.add([obj2])#,obj3r,obj3l,obj3p])
     else:
         obj2r = RightArm2.translate(shift[1],-size2[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
         obj2l = LeftArm2.translate(shift[1],-size2[1]/2)#-spacings_to_feed[2]*1e6-size3[1]/2)
         obj2p = pad2.translate(shift[1],-size2[1]/2)# -spacings_to_feed[2]*1e6-size3[1]/2)
-        structure.add([obj2r, obj2l, obj2p,obj3r,obj3l,obj3p])
+        structure.add([obj2r, obj2l, obj2p])#,obj3r,obj3l,obj3p])
 else:
     structure.add(LCRes1)
     obj2u = U2.translate(shift[1], 0)# -size2[1]/2)
     obj2m = M2.translate(shift[1], 0)#-size2[1]/2)
-    obj3u = U3.translate(shift[2], 0)# -size2[1]/2)
-    obj3m = M3.translate(shift[2], 0)#-size2[1]/2)
-    obj4u = U4.translate(shift[3], 0)# -size2[1]/2)
-    obj4m = M4.translate(shift[3], 0)#-size2[1]/2)
-    structure.add([obj2u,obj2m,obj3m,obj3u,obj4u,obj4m])
+    # obj3u = U3.translate(shift[2], 0)# -size2[1]/2)
+    # obj3m = M3.translate(shift[2], 0)#-size2[1]/2)
+    # obj4u = U4.translate(shift[3], 0)# -size2[1]/2)
+    # obj4m = M4.translate(shift[3], 0)#-size2[1]/2)
+    structure.add([obj2u,obj2m])#,obj3m,obj3u,obj4u,obj4m])
 '''
 Add the translated objects to the cell with the design and flatten it just to be sure.
 '''
@@ -264,4 +264,4 @@ structure.flatten()
 
 lib = gdspy.GdsLibrary()
 lib.add(structure)
-lib.write_gds('hanged_LCRes_L1-760um_L2-1000um_L3-800um_L4-900um.gds')
+lib.write_gds('hanged_LCRes_L1-227um_C1-38um_L2-279um_C2-50um.gds')
