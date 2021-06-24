@@ -3744,7 +3744,7 @@ def hanged_waveguide(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530
     
     return waveguide, shift_x
 
-def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530e-6):
+def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530e-6,overlap=1e-6):
     """
     Parameters
     ----------
@@ -3787,6 +3787,7 @@ def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360
     d = d*1e6
     P = P*1e6
     Q = Q*1e6
+    overlap = overlap*1e6
     R = max(A) + P
     
     
@@ -3833,9 +3834,17 @@ def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360
     x12,y12 = x11 + B[0], y11 - A[0]
     
     wells = gdspy.Cell('wells')
+    mask = gdspy.Cell('mask')
+    mask_overlap = gdspy.Cell('mask overlap')
+    
+    k = 1/20
     
     well_1 = gdspy.Rectangle([x11,y11],[x12,y12])
+    mask_1 = gdspy.Rectangle([x11-alpha*k,y11+c],[x12+alpha*k,y12-alpha*k])
+    mask_overlap_1 = gdspy.Rectangle([x11-alpha*k-overlap,y11+c],[x12+alpha*k+overlap,y12-alpha*k-overlap])
     wells.add(well_1)
+    mask.add(mask_1)
+    mask_overlap.add(mask_overlap_1)
     
     center_wells_x = [first_object[0][0]]
     
@@ -3847,9 +3856,13 @@ def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360
         x1,y1 = w2 + alpha, y11
         x2,y2 = x1 + B[i], y1 - A[i]
         well_i = gdspy.Rectangle([x1,y1], [x2,y2])
+        mask_i = gdspy.Rectangle([x1-alpha*k,y1+c],[x2+alpha*k,y2-alpha*k])
+        mask_overlap_i = gdspy.Rectangle([x1-alpha*k-overlap,y1+c], [x2+alpha*k+overlap,y2-alpha*k-overlap])
         center_i_x = x1 + B[i]/2
         center_wells_x.append(center_i_x)
         wells.add(well_i)
+        mask.add(mask_i)
+        mask_overlap.add(mask_overlap_i)
         w2 = x2
     
     
@@ -3862,7 +3875,8 @@ def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360
         dxh= np.abs(center_wells_x[i] - center_wells_x[0])
         shift_x.append(dxh)
     
-    return waveguide, shift_x
+    return waveguide, shift_x, mask, mask_overlap
+
 
 
 
