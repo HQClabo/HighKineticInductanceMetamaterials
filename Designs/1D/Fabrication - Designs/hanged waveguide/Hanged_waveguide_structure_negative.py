@@ -5,8 +5,142 @@ Created on Wed Apr 21 12:46:01 2021
 @author: vweibel
 """
 import gdspy
-from Modules.ModuleResonator import CompTwirlSpirPad, CompTwirlSpir, hanged_waveguide_negative, OPKI_down
+from Modules.ModuleResonator import CompTwirlSpirPad, CompTwirlSpir, OPKI_down, hanged_waveguide_negative
 import numpy as np
+
+def hanged_waveguide_negative(L,w,N,dim_wells,first_object,c=30e-6,d=70e-6,P=360e-6,Q=530e-6,overlap=1e-6):
+    """
+    Parameters
+    ----------
+    L : float
+        LENGTH OF TRANSMISSION LINE WITHOUT PADS. (SI units)
+    w : float
+        WIDTH OF TRANSMISSION LINE. (SI units)
+    N : integer
+        NUMBER OF WELLS ALONG TRANSMISSION LINE.
+    dim_wells : N-dimensional list of tuples
+        DIMENSION OF WELLS in [x,y] direction
+    c : float, optional
+        SPACING TRANSMISSION LINE TO GROUND PLANE. The default is 30e-6. (SI units)
+    d : float, optional
+        SPACING PADS TO GROUND PLANE. The default is 70e-6. (SI units)
+    P : float, optional
+        HEIGHT OF PADS. The default is 360e-6. (SI units)
+    Q : float, optional
+        WIDTH OF PADS. The default is 530e-6. (SI units)
+    first_object : list of 1 tuple and 1 number
+        GIVE TOP-COORDINATES (i.e. x-coordinate of center, y-coordinate = top edge of object; in um) and spacing to feedline
+
+    Returns
+    -------
+    waveguide : TYPE
+        DESCRIPTION.
+    wells : TYPE
+        DESCRIPTION.
+
+    """
+    import gdspy
+    import ctypes
+    import numpy as np
+    
+    L = L*1e6
+    w = w*1e6
+    A = [a[1] for a in dim_wells]
+    B = [b[0] for b in dim_wells]
+    c = c*1e6
+    d = d*1e6
+    P = P*1e6
+    Q = Q*1e6
+    overlap = overlap*1e6
+    R = max(A) + P
+    
+    
+    if len(A)%N > 0:
+        print('Wrong amount of specified well depths.')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well depths.','hanged_waveguide',1)
+        return
+    if len(B)%N > 0:
+        print('Wrong amount of specified well widths!')
+        ctypes.windll.user32.MessageBoxW(0,'Wrong amount of specified well widths!','hanged_waveguide',1)
+        return
+    
+    #calculate alpha (spacing between wells)
+    alpha = 1/(N+1)*(L - sum(B))
+    if alpha < 0:
+        print('Please choose smaller well widths or a smaller number of them, cannot be spaced properly!')
+        ctypes.windll.user32.MessageBoxW(0,'Please choose smaller well widths or a smaller number of them, cannot be spaced properly!','hanged_waveguide',1)
+        return
+    
+    
+    #draw big ground box
+    origin = first_object[0][0]- B[0]/2 - alpha - 2*Q - d, first_object[0][1] + first_object[1]*1e6 + w/2 - P/2 - d - R
+    grdbox_width = 2*d + 4*Q + L
+    grdbox_height = 2*R + 2*d + P
+    grdbox = gdspy.Rectangle(origin, [origin[0]+grdbox_width, origin[1]+grdbox_height])
+    
+    
+    
+    #draw feedline
+    p1,q1 = origin[0]+Q+d, first_object[0][1] + first_object[1]*1e6 + w/2 
+    p2,q2 = p1 + Q/2, q1
+    p3,q3 = p1 + Q, q1
+    p4,q4 = p3 + L, q1 
+    p5,q5 = p4 + Q/2, q1
+    p6,q6 = p4 + Q, q1
+    
+    feedline = gdspy.FlexPath([[p1,q1],[p2,q2]],P)
+    feedline = feedline.segment([p3,q3],w).segment([p4,q4],w).segment([p5,q5],P).segment([p6,q6],P)
+    guide = gdspy.FlexPath([[p1-d,q1],[p2,q2]],P+2*d)
+    guide = guide.segment([p3,q3],w+2*c).segment([p4,q4],w+2*c).segment([p5,q5],P+2*d).segment([p6+d,q6],P+2*d)
+    
+    #draw the wells
+    x11,y11 = origin[0] + d + 2*Q + alpha, origin[1] + R + d + P/2 - w/2 - c
+    x12,y12 = x11 + B[0], y11 - A[0]
+    
+    wells = gdspy.Cell('wells')
+    mask = gdspy.Cell('mask')
+    mask_overlap = gdspy.Cell('mask overlap')
+    
+    k = 1/20
+    
+    well_1 = gdspy.Rectangle([x11,y11],[x12,y12])
+    mask_1 = gdspy.Rectangle([x11-alpha*k,y11+c],[x12+alpha*k,y12-alpha*k])
+    mask_overlap_1 = gdspy.Rectangle([x11-alpha*k-overlap,y11+c],[x12+alpha*k+overlap,y12-alpha*k-overlap])
+    wells.add(well_1)
+    mask.add(mask_1)
+    mask_overlap.add(mask_overlap_1)
+    
+    center_wells_x = [first_object[0][0]]
+    
+    w2 = x12
+    x1, y1 = 0.0, 0.0
+    x2, y2 = 0.0, 0.0
+    
+    for i in range(1,len(A)):
+        x1,y1 = w2 + alpha, y11
+        x2,y2 = x1 + B[i], y1 - A[i]
+        well_i = gdspy.Rectangle([x1,y1], [x2,y2])
+        mask_i = gdspy.Rectangle([x1-alpha*k,y1+c],[x2+alpha*k,y2-alpha*k])
+        mask_overlap_i = gdspy.Rectangle([x1-alpha*k-overlap,y1+c], [x2+alpha*k+overlap,y2-alpha*k-overlap])
+        center_i_x = x1 + B[i]/2
+        center_wells_x.append(center_i_x)
+        wells.add(well_i)
+        mask.add(mask_i)
+        mask_overlap.add(mask_overlap_i)
+        w2 = x2
+    
+    
+    guide = gdspy.boolean(guide,wells,'or')
+    waveguide = gdspy.boolean(guide,feedline, 'not')
+    
+    shift_x = [center_wells_x[0]]
+    
+    for i in range(1,len(A)):
+        dxh= np.abs(center_wells_x[i] - center_wells_x[0])
+        shift_x.append(dxh)
+    
+    return waveguide, shift_x, mask, mask_overlap
+
 
 '''
 specifiy relevant parameters
@@ -16,20 +150,20 @@ alpha = 2                             #alpha gives the ratio between (well width
 beta = 1.2                            #beta is the ration between (well depth):(object height)
 L_feed = 4.79e-3                      #length of the transmission line (without pads)
 w_feed = 2e-4                         #width of transmission line
-c_feed = 30e-6                        #separation of transmission line to ground
-L_spir = [500e-6,567e-6,760e-6,1000e-6]       #length of spiral
-s_M = 7e-6                          #interspacing of inductor
-t_spir = 3e-6                       #width of spiral
+c_feed = 4e-6                        #separation of transmission line to ground
+L_spir = [250e-6,279e-6,380e-6,500e-6]       #length of spiral
+s_M = 4.5e-6                          #interspacing of inductor
+t_spir = 0.5e-6                       #width of spiral
 L_couple =100e-6                      #length of spiral parallel to transmission line, ending in square capacitor
 dim_pad1 = np.array([25e-6,25e-6])    #dimension of capacitor pad of spiral
-Ac = 100e-6                            # condensator width of LC-Resonator
-tc = 4e-6                             # condensator thickness of LC-Resonator
+Ac = 50e-6                            # condensator width of LC-Resonator
+tc = 2e-6                             # condensator thickness of LC-Resonator
 center1 = [0.0,0.0]                   #center of first object, used as a reference point for everything else
 N_array = 1                           #number of unit cells in spiral array
 M_uc = 2                              #how many objects in one unit cell
 tv = 5e-6                             #intracell spacing of spiral array
 tw = 10e-6                            #intercell spacing of spiral array
-spacings_to_feed = 6e-6               #spacing of each object to the feedline
+spacings_to_feed = 60e-6               #spacing of each object to the feedline
 
 spiral_yn = False
 array_in_2nd = False
@@ -209,7 +343,7 @@ Add the PolygonSet to the cell with the design ('Hanged Waveguide').
 '''
 
 
-waveguide, shift = hanged_waveguide_negative(L_feed,w_feed,n,well_size,[top1, spacings_to_feed])
+waveguide, shift,mask, mask_overlap = hanged_waveguide_negative(L_feed,w_feed,n,well_size,[top1, spacings_to_feed],c=c_feed)
 
 structure = gdspy.Cell('Hanged Waveguide')
 # structure.add(waveguide)
@@ -277,9 +411,15 @@ else:
 Add to the cell with the design and flatten it just to be sure.
 '''
 
-structure.add(negative)
-structure.flatten()
+# structure.add(negative)
+# structure.flatten()
+
+layer2 = gdspy.boolean(negative,mask,'not',layer=2)
+layer4 = gdspy.boolean(negative,mask_overlap,'and',layer=4)
+
+structure.add(layer2)
+structure.add(layer4)
 
 lib = gdspy.GdsLibrary()
 lib.add(structure)
-lib.write_gds('hanged_L500_L567_L760_L1000.gds')
+lib.write_gds('hanged_L250_L279_L380_L500_s_60um.gds')
