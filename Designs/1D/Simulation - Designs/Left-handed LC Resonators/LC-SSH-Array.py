@@ -7,7 +7,7 @@ Created on Fri Mar 12 17:17:32 2021
 
 import numpy as np
 import gdspy
-from Modules.ModuleResonator import OPKI_up,unit_cell, unit_cell_GGG, unit_cell_upup,ghosts_U, ghosts_U_GGG, T_feedline_simulation, T_feedline_extended, waveguide_simulation, waveguide_extended_new
+from Modules.ModuleResonator import *
 
 def ghost_feedline_upup(Q, unitcell_size,startM, startU, stopU, strip_height, tw, tv, M, U, t = 2e-6, Sg = 10e-6,T=100e-6,R=50e-6,f=24e-6, A = 50e-6,B=60e-6, w=4e-6,cozy = False):
     tw = tw*1e6
@@ -81,14 +81,95 @@ def ghost_feedline_upup(Q, unitcell_size,startM, startU, stopU, strip_height, tw
     
     return ground_with_feeds
 
+def ghost_feedline_simulation(Q, unitcell_size,startM, strip_height, tw, tv, M, U, w=500e-9, t = 2e-6, Sg = 10e-6,T=100e-6,R=50e-6,f=24e-6, r=29e-6,A = 50e-6, wf=4e-6,cozy = False):
+# =============================================================================
+#     M: list of coordinates for first M[0] and second M[1] ghost meander
+#     U: list of coordinates for first U[0] and second U[1] ghost capacitor 
+# =============================================================================
+    
+    tw = tw*1e6
+    tv = tv*1e6
+    t = t*1e6
+    w = w*1e6
+    Sg = Sg*1e6 #lateral spacing to ground planes
+    T = T*1e6 #thickness of ground planes
+    R = R*1e6 #ground plane width
+    f = f*1e6
+    r = r*1e6
+    A = A*1e6
+    wf = wf*1e6#start width feedline
+    
+    M[0][-1][1] = M[0][-2][1] + 1/2*(M[0][-1][1]-M[0][-2][1])
+    M[1][-1][1] = M[1][-2][1] + 1/2*(M[1][-1][1]-M[1][-2][1])
+    stopM = startM[0] - A - tw + Q*unitcell_size[0], startM[1] - 2*f  + strip_height 
+    
+    if cozy == True:
+        x3,y3 = startM[0] - 3*A/2 - tw - Sg, startM[1]
+        x4,y4 = startM[0] + A/2 + Q*unitcell_size[0] + Sg, y3 + strip_height - 2*f
+    else:
+        x3, y3 = startM[0] - 3*A/2 - tw - Sg, startM[1] - f
+        x4, y4 = startM[0] + A/2 + Q*unitcell_size[0] + Sg, y3 + strip_height
+    
+    #(x1,y1) and (x2,y2): corners of outer box, (x3,y3) and (x4,y4): corners of window
+    
+    x1, y1 = x3 - R, y3 - T
+    x2, y2 = x4 + R, y4 + T
+    
+    width_guide = 11/5 * wf
+
+    dyke = (width_guide-w)/2
+    
+    #draw outer box + window
+    window = gdspy.Rectangle([x3,y3], [x4,y4])
+    outer_box = gdspy.Rectangle([x1,y1],[x2,y2])
+    
+    #coordinates/ dimensions for FlexPath: right feedline + guide (etched away)
+    Y0 = y3 + 1/2*np.abs(y3-y4)
+    points = [[x1,Y0],[startM[0]-3*A/2-tw,Y0]]
+    
+    #enclosing contact pad/patch to define it/ this big_patch + guide will be etched away
+    guide = gdspy.FlexPath([points[0],points[1]],width_guide)
+    
+    
+    #draw the feedline (not etched away)
+    feedline = gdspy.FlexPath([points[0],points[1]],wf)
+    ghost_U = gdspy.FlexPath(U[0], t).translate(startM[0]-A-tw,startM[1]-f+r)
+    ghost_M = gdspy.FlexPath(M[0],w).translate(startM[0]-A-tw,startM[1]-f+r)
+    
+    feedline = gdspy.boolean(feedline,ghost_U,'or')
+    feedline = gdspy.boolean(feedline,ghost_M, 'or')
+
+    
+    #coordinates for left feedline + guide (FlexPath)
+    points2 = [[x2,Y0],[startM[0]+A/2+Q*unitcell_size[0],Y0]]
+    
+    #enclose contact pad with etched line (right edge)
+    guide2 = gdspy.FlexPath([points2[0],points2[1]],width_guide)  
+    feedline2 = gdspy.FlexPath([points2[0],points2[1]],wf)
+    ghost_U2 = gdspy.FlexPath(U[1], t).translate(startM[0]+Q*unitcell_size[0],startM[1]+strip_height-f-r)
+    ghost_M2 = gdspy.FlexPath(M[1],w).translate(startM[0]+Q*unitcell_size[0],startM[1]+strip_height-f-r)
+    
+    feedline2 = gdspy.boolean(feedline2,ghost_U2,'or')
+    feedline2 = gdspy.boolean(feedline2,ghost_M2, 'or')
+    
+    
+    outer_box = gdspy.boolean(outer_box, guide, 'not')
+    outer_box = gdspy.boolean(outer_box, guide2, 'not')
+    ground = gdspy.boolean(outer_box,window,'not')
+    ground_with_feed = gdspy.boolean(ground,feedline,'or')
+    ground_with_feeds = gdspy.boolean(ground_with_feed,feedline2,'or')
+    
+    return ground_with_feeds
+
+
 
 """
 ~~~~~~ parameters to choose ~~~~~~
 """
 BIG = False                    #use twice the size-parameters
-Tfeed = True                 #T-feedline (True) or smooth feedline (False)
+Tfeed = False                 #T-feedline (True) or smooth feedline (False)
 GGG = False                 # GGG = separation to ground strip constant instead of ground strip width
-ghostfeed = False             #feedline with ghost resonator galvanically connected to it
+ghostfeed = True             #feedline with ghost resonator galvanically connected to it
 upup = False
 
 if BIG == True:
@@ -119,7 +200,7 @@ if BIG == True:
 else:
     L = 279e-6              #total length of inductor in SI units
     s = 4.5e-6              #interspacing of inductor in SI units
-    w = 0.47e-6              #width of inductor wire
+    w = 0.5e-6              #width of inductor wire
     Ac = 50e-6               #horizontal dimension of capacitor
     tc = 2e-6                #thickness of capacitor plates
     tv = 24e-6              #intracell spacing
@@ -134,7 +215,7 @@ else:
     Rg = 200e-6                         #extent of ground planes on each side of the array
     wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,10e-6,2e-6]     #width feedline for smooth feedline
-    Q = 10                   #number of unit cells
+    Q = 32                 #number of unit cells
     N_ghost = 2             #number of ghosts: For no ghosts, put zero
     if Tfeed==True:
         Sf2r = [10e-6,0.0]
@@ -205,8 +286,8 @@ if ground_yn == True:
         strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - 0.5*(tv*1e6 - k*min(tv,tw)*1e6), box_y2
         strip_x2, strip_y2 = strip_x1 - k*min(tv,tw)*1e6, strip_y1 + strip_height
         if ghostfeed == True:
-            strip1_x1,strip1_y1 = startM[0] - Ac/2*1e6 - 0.5*(tw*1e6 - k*min(tv,tw)*1e6), startM[1] +fp*1e6
-            strip1_x2,strip1_y2 = strip1_x1 - k*min(tv,tw)*1e6, startU[1] - Bc - Sgg*1e6
+            strip1_x1,strip1_y1 = startM[0] - Ac/2*1e6 - 0.5*(tw*1e6 - k*min(tv,tw)*1e6), startM[1] - fp*1e6
+            strip1_x2,strip1_y2 = strip1_x1 - k*min(tv,tw)*1e6, strip1_y1 + strip_height
             gr_strip1 = gdspy.Rectangle([strip1_x1,strip1_y1], [strip1_x2,strip1_y2])
    
     ground_strip_2nd_last = gdspy.Rectangle([strip_x1,strip_y1], [strip_x2,strip_y2])
@@ -216,9 +297,15 @@ if ground_yn == True:
 if Tfeed == True:
     groundplane_coords = T_feedline_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv,t=tc,Sr=Sf2r,D=Df,Sg = Sgg/2, T = Tg, R = Rg, f=fp,A=Ac,B=Bc*1e-6, w= wfT, cozy = False)
     # groundplane_coords = T_feedline_extended(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,D=Df,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6,laserwriter=True)
-elif ghostfeed == True:
+elif ghostfeed == True and upup == True:
     U_g, M_g, Bc = OPKI_up(L,s,w,Ac,tc,compact = False)
     groundplane_coords = ghost_feedline_upup(Q,unitcell_size,startM,startU,stopU,strip_height,tw,tv,M_g,U_g,t=tc,Sg=fp,T=Tg,R=Rg,f=fp,A=Ac,B=Bc*1e-6,w=wfT[2], cozy = True)
+elif ghostfeed == True and upup == False:
+    Ug1, Mg1, Bc = OPKI_up(L,s,w,Ac,tc)
+    Ug2, Mg2, Bc = OPKI_down(L,s,w,Ac,tc)
+    U = [Ug1, Ug2]
+    M = [Mg1, Mg2]
+    groundplane_coords = ghost_feedline_simulation(Q, unitcell_size, startM, strip_height, tw, tv, M, U)
 else:
     groundplane_coords = waveguide_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w_end=wfs[3],cozy=True)
     # groundplane_coords = waveguide_extended_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w=wfs)
@@ -245,7 +332,7 @@ design.flatten()
 lib = gdspy.GdsLibrary()
 lib.add(design)
 gdspy.LayoutViewer()
-# lib.write_gds("16LC-Array_trivial_Tfeed.gds")
+# lib.write_gds("LC-Dimer-ghostfeed.gds")
 
 """
 ~~~~~ Vincent's original version below ~~~~~~
