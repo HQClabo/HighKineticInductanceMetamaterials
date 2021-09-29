@@ -170,7 +170,7 @@ BIG = False                    #use twice the size-parameters
 Tfeed = False                 #T-feedline (True) or smooth feedline (False)
 GGG = False                 # GGG = separation to ground strip constant instead of ground strip width
 ghostfeed = True             #feedline with ghost resonator galvanically connected to it
-upup = False
+upup = True
 
 if BIG == True:
     L = 567e-6                          #total length of inductor in SI units
@@ -203,19 +203,19 @@ else:
     w = 0.5e-6              #width of inductor wire
     Ac = 50e-6               #horizontal dimension of capacitor
     tc = 2e-6                #thickness of capacitor plates
-    tv = 24e-6              #intracell spacing
+    tv = 16e-6              #intracell spacing
     tw = 12e-6              #intercell spacing
-    k = 1/4                #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
+    k = 1/4               #fraction determining how thick the ground strip between resonators is : k*min(tv,tw)
     ep = 20.5e-6             #horizontal dimension of ground patches
     fp = 24e-6               #vertical dimension of ground patches
     rp = 29e-6               #vertical spacing of resonator "head" to ground plane
     Sgg = 60e-6                        #spacing last ghost to ground
-    Tg = 100e-6                         #thickness of ground planes on each side of the array
+    Tg = 100e-6                         #thickness of ground planes on each side of the array (horizontal direction)
     Df = 250e-6                         #from where grounding of feedline widens
-    Rg = 200e-6                         #extent of ground planes on each side of the array
+    Rg = 200e-6                         #extent of ground planes on each side of the array (vertical direction)
     wfT = [360e-6,90e-6,10e-6]          #width feedline for T-geometry
     wfs = [360e-6,90e-6,10e-6,2e-6]     #width feedline for smooth feedline
-    Q = 32                 #number of unit cells
+    Q = 8                 #number of unit cells
     N_ghost = 2             #number of ghosts: For no ghosts, put zero
     if Tfeed==True:
         Sf2r = [10e-6,0.0]
@@ -264,13 +264,21 @@ if ghostfeed == True:
 else:
     GrdArray = gdspy.CellArray(ground, Q-1, 1, unitcell_size)
 #add ground to Qth unitcell
-#corners of 1st ground patch: down
-box_x1, box_y1 = centerQth[0] - tv*1e6 - Ac*1e6 - ep*1e6/2 - w*1e6/2, startM[1]
-box_x2, box_y2 = box_x1 + ep*1e6, startM[1]-fp*1e6
+if upup == False:
+    #corners of 1st ground patch: down
+    box_x1, box_y1 = centerQth[0] - tv*1e6 - Ac*1e6 - ep*1e6/2 - w*1e6/2, startM[1]
+    box_x2, box_y2 = box_x1 + ep*1e6, startM[1]-fp*1e6
+    #corners of 2nd ground patch: up
+    box_x3, box_y3 = centerQth[0] - ep*1e6/2 - w*1e6/2, center1st[1]+rp*1e6
+    box_x4, box_y4 = box_x3 + ep*1e6, box_y3 - fp*1e6
+else:
+    #corners of 1st ground patch: up
+    box_x1, box_y1 = centerQth[0] - tv*1e6 - Ac*1e6 - ep*1e6/2 - w*1e6/2, startM[1]
+    box_x2, box_y2 = box_x1 + ep*1e6, startM[1] + fp*1e6
+    box_x3, box_y3 = centerQth[0] - ep*1e6/2 - w*1e6/2, startM[1]
+    box_x4, box_y4 = box_x3 + ep*1e6, box_y3 + fp*1e6
+
 ground_box1 = gdspy.Rectangle([box_x1,box_y1], [box_x2,box_y2])
-#corners of 2nd ground patch: up
-box_x3, box_y3 = centerQth[0] - ep*1e6/2 - w*1e6/2, center1st[1]+rp*1e6
-box_x4, box_y4 = box_x3 + ep*1e6, box_y3 - fp*1e6
 ground_box2 = gdspy.Rectangle([box_x3,box_y3], [box_x4,box_y4])
 groundingQth = gdspy.boolean(ground_box1, ground_box2, 'or')
 if ground_yn == True:
@@ -282,6 +290,13 @@ if ground_yn == True:
              strip1_x1,strip1_y1 = startM[0] - Ac/2*1e6 - tsg*1e6, startM[1] - fp*1e6
              strip1_x2,strip1_y2 = strip1_x1 - (tw*1e6 - 2*tsg*1e6), startU[1] - Bc - Sgg*1e6
              gr_strip1 = gdspy.Rectangle([strip1_x1,strip1_y1], [strip1_x2,strip1_y2])   
+    elif upup:
+        strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - 0.5*(tv*1e6 - k*min(tv,tw)*1e6), box_y2
+        strip_x2, strip_y2 = strip_x1 - k*min(tv,tw)*1e6, strip_y1 - strip_height
+        if ghostfeed:
+            strip1_x1,strip1_y1 = startM[0] - Ac/2*1e6 - 0.5*(tw*1e6 - k*min(tv,tw)*1e6), startM[1] + fp*1e6
+            strip1_x2, strip1_y2 = strip1_x1 - k*min(tv,tw)*1e6, strip1_y1 - strip_height    
+            gr_strip1 = gdspy.Rectangle([strip1_x1,strip1_y1], [strip1_x2,strip1_y2])
     else:
         strip_x1, strip_y1 = stopU[0] + tc*1e6/2 - Ac*1e6 - 0.5*(tv*1e6 - k*min(tv,tw)*1e6), box_y2
         strip_x2, strip_y2 = strip_x1 - k*min(tv,tw)*1e6, strip_y1 + strip_height
@@ -289,7 +304,6 @@ if ground_yn == True:
             strip1_x1,strip1_y1 = startM[0] - Ac/2*1e6 - 0.5*(tw*1e6 - k*min(tv,tw)*1e6), startM[1] - fp*1e6
             strip1_x2,strip1_y2 = strip1_x1 - k*min(tv,tw)*1e6, strip1_y1 + strip_height
             gr_strip1 = gdspy.Rectangle([strip1_x1,strip1_y1], [strip1_x2,strip1_y2])
-   
     ground_strip_2nd_last = gdspy.Rectangle([strip_x1,strip_y1], [strip_x2,strip_y2])
     groundingQth = gdspy.boolean(groundingQth, ground_strip_2nd_last, 'or', **carac_ground)
 
@@ -305,7 +319,7 @@ elif ghostfeed == True and upup == False:
     Ug2, Mg2, Bc = OPKI_down(L,s,w,Ac,tc)
     U = [Ug1, Ug2]
     M = [Mg1, Mg2]
-    groundplane_coords = ghost_feedline_simulation(Q, unitcell_size, startM, strip_height, tw, tv, M, U)
+    groundplane_coords = ghost_feedline_simulation(Q,unitcell_size,startM,strip_height,tw,tv,M,U,w=w,t=tc,Sg=Sgg/6,T=Tg,R=Rg,f=fp,r=rp,A=Ac,wf=tc,cozy=False)
 else:
     groundplane_coords = waveguide_simulation(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost, t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w_end=wfs[3],cozy=True)
     # groundplane_coords = waveguide_extended_new(Q, unitcell_size, startM, startU, stopU, strip_height, tw, tv, N_ghost,t=tc,Sr=Sf2r,Sg=Sgg,T=Tg,R=Rg,f=fp,A=Ac,w=wfs)
@@ -331,8 +345,18 @@ design.flatten()
 
 lib = gdspy.GdsLibrary()
 lib.add(design)
-gdspy.LayoutViewer()
-# lib.write_gds("LC-Dimer-ghostfeed.gds")
+# gdspy.LayoutViewer()
+filename = 'LC_Array'
+if ghostfeed:
+    filename = filename+'_ghostfeed'
+if upup:
+    filename = filename+'_upup'    
+if tv < tw:
+    lib.write_gds(str(2*Q)+filename+"_trivial.gds")
+if tv > tw:
+    lib.write_gds(str(2*Q)+filename+"_topo_"+str(int(tv*1e6))+"vs"+str(int(tw*1e6))+".gds")
+if tv == tw:
+    lib.write_gds(str(2*Q)+filename+"_normal.gds")
 
 """
 ~~~~~ Vincent's original version below ~~~~~~
